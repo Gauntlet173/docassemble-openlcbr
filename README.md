@@ -1,5 +1,9 @@
 # docassemble-openlcbr
 A docassemble package for case outcome prediction using the analogical reasoning features of openlcbr.
+##Requirements
+* docassemble
+* openlcbr
+* Python 3.6 (required by openlcbr)
 ## Installation Procedure
 Note that this is not a final installation procedure for the package, this just gets you as far as development has gone so far.
 For the time being, docassemble-openlcbr is expecting OpenLCBR to be installed at /opt/openlcbr inside the docker container for docassemble.
