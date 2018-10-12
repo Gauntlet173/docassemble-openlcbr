@@ -1,3 +1,5 @@
+# Adopted from https://github.com/mgrabmair/openlcbr by Matthhias Grabmair
+
 from lcbr import ibp
 import sys
 import os

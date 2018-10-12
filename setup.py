@@ -46,7 +46,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
 
 setup(name='docassemble.openlcbr',
       version='0.0.1',
-      description=('A docassemble extension.'),
+      description=('A docassemble extension implementing legal case-based reasoning based via openlcbr by Matthias Grabmair.'),
       long_description="# docassemble-openlcbr\r\nA docassemble package for case outcome prediction using the analogical reasoning features of openlcbr.\r\n## Requirements\r\n* docassemble\r\n## Installation Procedure\r\nWe have changed the way that we are dealing with installing openlcbr and this package, so this section is \r\nto be continued ...\r\n## Current Issues:\r\n* Working on getting openlcbr integrated into the docassemble-openlcbr package, to make installation as painless as possible.\r\n* Need to figure out how to correctly credit Matthias Grabmair in this package.\r\n## Progress:\r\n* Matthias Grabmair backported openlcbr to Python 2.7 to make it easier to use with docassemble's module system.\r\n## Work Plan\r\n* Get output of OpenLCBR test data displayed on docassemble interview\r\n* Have DocAssemble interview generate a case file to test against the database.\r\n* Reformat openlcbr explanation output as structured data\r\n* Display explanation data in docassemble interview",
       long_description_content_type='text/markdown',
       author='Jason Morris',
