@@ -1,3 +1,16 @@
+modules:
+  - .lcbr
+  - .ibp
+  - docassemble.base.util
+---
+objects:
+  - database: DAStaticFile.using(filename="data/sources/trade_secret_cases.yaml")
 ---
 mandatory: True
 question: This is a test.
+subquestion: |
+  ${ ibp_result }
+---
+code: |
+  ibp_result = run_lcbr_test(database.path())
+---

@@ -9,6 +9,10 @@ ABSTAIN = 'a'
 PLAINTIFF = 'p'
 DEFENDANT = 'd'
 
+# =============================================================================
+# global variables
+# =============================================================================
+explanation = ""
 
 # =============================================================================
 # general model function
@@ -29,8 +33,7 @@ def issue_factors_in_case(case, issue):
 
 
 def factors_unanimous_for_side(factor_ids, factor_collection):
-    sides = set(map(lambda factor_id: factor_collection[factor_id]['favored_side'],
-                    factor_ids))
+    sides = set(map(lambda factor_id: factor_collection[factor_id]['favored_side'], factor_ids))
     if len(sides) == 1:
         return list(sides)[0]
     return False
@@ -69,86 +72,86 @@ def filter_plaintiff_factor_ids(factor_ids, all_factors):
 
 
 def theory_testing(case, issue, theory_factor_ids, all_factors, cases, model, query_broadened=False):
-
+    global explanation
     issue_precedents = cases_with_factors(theory_factor_ids, cases)
 
     ## if precedents found do theory testing
     if issue_precedents:
-        print("retrieved cases sharing "+str(theory_factor_ids))
+        explanation += "retrieved cases sharing "+str(theory_factor_ids)+'\n'
         for c in issue_precedents:
-            print(c['id']+' '+str(set(c['factors']))+' won by '+c['winner'])
+            explanation += c['id']+' '+str(set(c['factors']))+' won by '+c['winner'] + '\n'
         side = cases_unanimous_for_side(issue_precedents)
         ## if cases unanimous predict accordingly
         if side:
-            print('cases unanimously favor '+side)
+            explanation += 'cases unanimously favor '+side+'\n'
             return side
         else:
             ## if cases not unanimous explain away exceptions using KO factors
-            print('cases not unanimous, trying to explain away')
+            explanation += 'cases not unanimous, trying to explain away\n'
             all_explained_away = True
             for c in filter_defendant_cases(issue_precedents):
-                print('trying to explain away '+c['id'])
+                explanation += 'trying to explain away '+c['id']+ '\n'
                 unshared_ko_factors = case_ko_factors(c, model) - set(case['factors'])
                 if unshared_ko_factors:
-                    print(c['id']
-                          +' can be explained away by unshared KO factors '
-                          +str(unshared_ko_factors))
+                    explanation += c['id'] \
+                          +' can be explained away by unshared KO factors ' \
+                          +str(unshared_ko_factors) + '\n'
                 else:
-                    print(c['id']+' has no unshared KO factors; cannot be explained away')
+                    explanation += c['id']+' has no unshared KO factors; cannot be explained away\n'
                     all_explained_away = False
                     return DEFENDANT
             if all_explained_away:
-                print('all counterexamples can be explained away')
+                explanation += 'all counterexamples can be explained away\n'
                 return PLAINTIFF
 
     ## if no precedents found attempt theory testing with broadened query if not already so
     elif not query_broadened:
-        print('no cases retrieved in theory testing, broadening query')
+        explanation += 'no cases retrieved in theory testing, broadening query\n'
         p_factor_ids = set(filter_plaintiff_factor_ids(theory_factor_ids, all_factors))
-        print('each of '+str(p_factor_ids)+' is dropped for new theory testing')
+        explanation += 'each of '+str(p_factor_ids)+' is dropped for new theory testing\n'
         ## iterate over broadened query sets
         broadened_all_plaintiff = True
         for pf_id in p_factor_ids:
-            broadened_tt = theory_testing(case,
-                                          issue,
-                                          [f_id for f_id in p_factor_ids if not f_id == pf_id],
-                                          all_factors,
-                                          cases,
-                                          model,
+            broadened_tt = theory_testing(case, \
+                                          issue, \
+                                          [f_id for f_id in p_factor_ids if not f_id == pf_id], \
+                                          all_factors, \
+                                          cases, \
+                                          model, \
                                           query_broadened=True)
-            print('prediction for this broadened query: '+broadened_tt)
+            explanation += 'prediction for this broadened query: '+broadened_tt +'\n'
             if not broadened_tt == PLAINTIFF:
                 broadened_all_plaintiff = False
         if broadened_all_plaintiff:
-            print('all broadened queries favor plaintiff')
+            explanation += 'all broadened queries favor plaintiff\n'
             return PLAINTIFF
         else:
-            print('at least one broadened query favors defendant')
+            explanation += 'at least one broadened query favors defendant\n'
             return ABSTAIN
 
     # if query already broadened and no precedents are found abstain
     else:
-        print('no precedents found. abstaining')
+        explanation += 'no precedents found. abstaining\n'
         return ABSTAIN
 
 
 def predict_intermediate_issue(case, issue_id, all_factors, cases, model):
-
+    global explanation
     issue = model['issues'][issue_id]
 
     # if issue is not raised predict default winner if available, else abstain
     if not issue_raised(case, issue['id'], model):
         if 'winner_if_unraised' in issue:
             pred = issue['winner_if_unraised']
-            print(issue['id']+' is has not been raised and is deemed won by '+pred)
+            explanation += issue['id']+' is has not been raised and is deemed won by '+pred + '\n'
             return pred
         else:
-            print(issue['id']+' is has not been raised and there is no default winner. abstaining')
+            explanation += issue['id']+' is has not been raised and there is no default winner. abstaining \n'
             return ABSTAIN
 
     # if issue is raised then predict its antecedents
     else:
-        antecedent_preds = list(map(lambda a: predict_issue(case, a, all_factors, cases, model),
+        antecedent_preds = list(map(lambda a: predict_issue(case, a, all_factors, cases, model), \
                                     issue['antecedents']))
         # disjunctive antecedents
         if 'disjoint_antecedents' in issue and issue['disjoint_antecedents']:
@@ -169,32 +172,32 @@ def predict_intermediate_issue(case, issue_id, all_factors, cases, model):
 
 
 def predict_leaf_issue(case, issue_id, all_factors, cases, model):
-
+    global explanation
     issue = model['issues'][issue_id]
 
     ## if issue not raised predict default winner
     if not issue_raised(case, issue['id'], model):
-        print(issue['id']
-              +' has not been raised. predicting for: '
-              +issue['winner_if_unraised'])
+        explanation += issue['id'] \
+              +' has not been raised. predicting for: ' \
+              +issue['winner_if_unraised'] + '\n'
         return issue['winner_if_unraised']
     else:
         ## if issue raised and factors unanimously favor one side, predict it
         issue_factor_ids = issue_factors_in_case(case, issue)
-        print('factors in '+case['id']+' for '+issue['id']+': '+str(issue_factor_ids))
+        explanation += 'factors in '+case['id']+' for '+issue['id']+': '+str(issue_factor_ids)+ '\n'
         side = factors_unanimous_for_side(issue_factor_ids, all_factors)
         if side:
-            print('all factors unanimously favor '+side)
+            explanation += 'all factors unanimously favor '+side+'\n'
             return side
         else:
             return theory_testing(case, issue, issue_factor_ids, all_factors, cases, model)
 
 
 def predict_issue(case, issue_id, factors, cases, model):
-
+    global explanation
     issue = model['issues'][issue_id]
-    print('Analyzing case '+case['id'])
-    print('predicting '+issue['id'])
+    explanation += 'Analyzing case '+case['id']+'\n'
+    explanation += 'Predicting '+issue['id']+'\n'
 
     if issue['type'] in ['intermediate_issue', 'top_level_issue']:
         return predict_intermediate_issue(case, issue_id, factors, cases, model)
@@ -205,7 +208,7 @@ def predict_issue(case, issue_id, factors, cases, model):
 
 
 def predict_case(case, top_issue_id, factors, case_collection, model):
-
+    global explanation
     assert top_issue_id in model['issues'], 'top issue '+top_issue_id+' not in domain model'
 
     # remove test case from collection if in there
@@ -214,11 +217,12 @@ def predict_case(case, top_issue_id, factors, case_collection, model):
     pred = predict_issue(case, top_issue_id, factors, cases, model)
 
     if pred == ABSTAIN:
-        print('system is abstaining from prediction')
+        explanation += 'system is abstaining from prediction\n'
     else:
         correct = pred == case['winner']
-        print('prediction for '+case['id']+': '+pred)
+        explanation += 'prediction for '+case['id']+': '+pred
         if correct:
-            print('which is CORRECT')
+            explanation += ' which is CORRECT \n'
         else:
-            print('which is INCORRECT')
+            explanation += ' which is INCORRECT \n'
+    return explanation
