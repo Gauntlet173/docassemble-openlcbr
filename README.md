@@ -7,6 +7,7 @@ We have changed the way that we are dealing with installing openlcbr and this pa
 to be continued ...
 ## Current Issues:
 * Working on getting openlcbr integrated into the docassemble-openlcbr package, to make installation as painless as possible.
+* Need to figure out how to correctly credit Matthias Grabmair in this package.
 ## Progress:
 * Matthias Grabmair backported openlcbr to Python 2.7 to make it easier to use with docassemble's module system.
 ## Work Plan
