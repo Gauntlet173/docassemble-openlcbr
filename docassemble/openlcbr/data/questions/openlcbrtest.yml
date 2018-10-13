@@ -7,10 +7,37 @@ objects:
   - database: DAStaticFile.using(filename="data/sources/trade_secret_cases.yaml")
 ---
 mandatory: True
-question: This is a test.
+question: docassemble-openlcbr demo
 subquestion: |
+  This website is a demonstration of the docassemble-openlcbr package being developed
+  by Jason Morris of Round Table Law as an ABA Innovation Fellowship project for
+  2018/2019.  The fellowship is sponsored by Clio.
+  
+  The purpose of this project is to take openlcbr, which is an open-source tool for
+  legal case-based reasoning written by Matthias Grabmair, and to implement it as a
+  extension to docassemble.
+  Docassemble is a leading open-source legal expert system and document automation
+  platform written by Jonathan Pyle.
+  
+  The purpose of the project is to explore whether it is possible to use
+  reasoning-by-analogy to extend the capabilities of legal expert systems to
+  include answering open-textured legal questions.
+  
+  Click below for an example of how reasoning by analogy works in an automated system.
+field: intro_seen
+---
+if: intro_seen
+mandatory: True
+question: Example of Reasoning By Analogy
+subquestion: |
+  >The openlcbr tool comes with a test database dealing with the issue of whether there has
+  >been a violation of a trade secret. It runs the analysis against one of the cases in
+  >its database, called "KG." Here is the trace of the reasoning that the tool goes
+  >through, and the prediction that it makes.
+  
   ${ ibp_result }
 ---
+mandatory: True
 code: |
   ibp_result = run_lcbr_test(database.path())
 ---

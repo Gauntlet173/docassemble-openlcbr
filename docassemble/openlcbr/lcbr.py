@@ -31,7 +31,6 @@ def load_dataset(data_files):
     domain_models = {}
 
     for f in data_files:
-        log('Attempting to open '+f, "info")
         with open(f, 'r') as stream:
             #print('loading: '+f)
             try:

@@ -77,41 +77,45 @@ def theory_testing(case, issue, theory_factor_ids, all_factors, cases, model, qu
 
     ## if precedents found do theory testing
     if issue_precedents:
-        explanation += "retrieved cases sharing "+str(theory_factor_ids)+'\n'
+        explanation += "Retrieving cases sharing all factors relevant to issue " + issue['id'] + ": \n\n"
         for c in issue_precedents:
-            explanation += c['id']+' '+str(set(c['factors']))+' won by '+c['winner'] + '\n'
+            explanation += '* '+ c['id']+' won by '+c['winner'] + '\n'
+        explanation += "\n\n"
         side = cases_unanimous_for_side(issue_precedents)
         ## if cases unanimous predict accordingly
         if side:
-            explanation += 'cases unanimously favor '+side+'\n'
+            explanation += 'All retrieved cases favour '+side+', predicting issue ' + issue['id'] + ' for ' + side + '.\n\n'
             return side
         else:
             ## if cases not unanimous explain away exceptions using KO factors
-            explanation += 'cases not unanimous, trying to explain away\n'
+            explanation += 'Retrieved cases are not unanimous. Considering knock-out factors.\n\n'
             all_explained_away = True
             for c in filter_defendant_cases(issue_precedents):
-                explanation += 'trying to explain away '+c['id']+ '\n'
+                explanation += 'Considering knock-out factors in '+c['id']+ '.\n\n'
                 unshared_ko_factors = case_ko_factors(c, model) - set(case['factors'])
                 if unshared_ko_factors:
                     explanation += c['id'] \
-                          +' can be explained away by unshared KO factors ' \
-                          +str(unshared_ko_factors) + '\n'
+                          +' was found for the Defendant, but can be distinguished because does not share knock-out factors with the test case: \n\n '
+                    for ukf in unshared_ko_factors:
+                        explanation += "* " + all_factors[ukf]['description'] + "\n"
+                    explanation += "\n\n"
                 else:
-                    explanation += c['id']+' has no unshared KO factors; cannot be explained away\n'
+                    explanation += c['id']+' has no unshared knock-out factors and cannot be distinguished. Predicting issue ' + issue['id'] + 'for Defendant.\n\n'
                     all_explained_away = False
                     return DEFENDANT
             if all_explained_away:
-                explanation += 'all counterexamples can be explained away\n'
+                explanation += 'All counterexamples can be distinguished. Predicting issue ' + issue['id'] + ' for Plaintiff.\n\n'
                 return PLAINTIFF
 
     ## if no precedents found attempt theory testing with broadened query if not already so
     elif not query_broadened:
-        explanation += 'no cases retrieved in theory testing, broadening query\n'
+        explanation += 'There are no cases sharing all relevant factors for issue. Expanding search.\n\n'
         p_factor_ids = set(filter_plaintiff_factor_ids(theory_factor_ids, all_factors))
-        explanation += 'each of '+str(p_factor_ids)+' is dropped for new theory testing\n'
         ## iterate over broadened query sets
         broadened_all_plaintiff = True
         for pf_id in p_factor_ids:
+            explanation += "Running prediction for relevant factors "
+            explanation += ' excluding ' + all_factors[pf_id]['description'] + ".\n\n"
             broadened_tt = theory_testing(case, \
                                           issue, \
                                           [f_id for f_id in p_factor_ids if not f_id == pf_id], \
@@ -119,19 +123,19 @@ def theory_testing(case, issue, theory_factor_ids, all_factors, cases, model, qu
                                           cases, \
                                           model, \
                                           query_broadened=True)
-            explanation += 'prediction for this broadened query: '+broadened_tt +'\n'
+            explanation += 'Prediction for this broadened query: '+broadened_tt +'.\n\n'
             if not broadened_tt == PLAINTIFF:
                 broadened_all_plaintiff = False
         if broadened_all_plaintiff:
-            explanation += 'all broadened queries favor plaintiff\n'
+            explanation += 'All broadened queries favor Plaintiff, predicting ' + issue['id'] + ' for Plaintiff.\n\n'
             return PLAINTIFF
         else:
-            explanation += 'at least one broadened query favors defendant\n'
+            explanation += 'At least one broadened query favors defendant, abstaining on issue ' + issue['id'] + '.\n\n'
             return ABSTAIN
 
     # if query already broadened and no precedents are found abstain
     else:
-        explanation += 'no precedents found. abstaining\n'
+        explanation += 'No precedents found in the case database for this issue. Abstaining.\n\n'
         return ABSTAIN
 
 
@@ -143,10 +147,10 @@ def predict_intermediate_issue(case, issue_id, all_factors, cases, model):
     if not issue_raised(case, issue['id'], model):
         if 'winner_if_unraised' in issue:
             pred = issue['winner_if_unraised']
-            explanation += issue['id']+' is has not been raised and is deemed won by '+pred + '\n'
+            explanation += 'Issue ' + issue['id']+' has not been raised, and is deemed won by '+pred + '.\n\n'
             return pred
         else:
-            explanation += issue['id']+' is has not been raised and there is no default winner. abstaining \n'
+            explanation += 'Issue ' +issue['id']+' has not been raised and there is no default winner. Abstaining. \n\n'
             return ABSTAIN
 
     # if issue is raised then predict its antecedents
@@ -155,19 +159,27 @@ def predict_intermediate_issue(case, issue_id, all_factors, cases, model):
                                     issue['antecedents']))
         # disjunctive antecedents
         if 'disjoint_antecedents' in issue and issue['disjoint_antecedents']:
+            explanation += "Sub-issues of issue " + issue['id'] + " are disjoint (any of).\n\n"
             if PLAINTIFF in antecedent_preds:   # one plaintiff prediction suffices
+                explanation += "At least one sub-issue is predicted for the plaintiff, predicting issue " + issue['id'] + " for the plaintiff.\n\n"
                 return PLAINTIFF
             elif ABSTAIN in antecedent_preds:   # if one antecedent is an abstain, abstain from whole
+                explanation += "No sub-issue is predicted for the plaintiff, at least one sub-issue is abstained. Abstaining on issue " + issue['id'] + ".\n\n"
                 return ABSTAIN
             else:
+                explanation += "No sub-issue is predicted for the plaintiff, and no sub-issue is abstained. Predicting issue " + issue['id'] + " for the defendant.\n\n"
                 return DEFENDANT                # otherwise defendant wins
         # default: conjunctive antecedents
         else:
+            explanation += "Sub-issues of issue " + issue['id'] + " are conjoint (all of).\n\n"
             if all_plaintiff(antecedent_preds):  # plaintiff if won all antecedents
+                explanation += "All sub-issues are predicted for the Plaintiff.  Predicting issue " + issue['id'] + " for the Plaintiff.\n\n"
                 return PLAINTIFF
             elif DEFENDANT in antecedent_preds:  # defendant wins if won one antencedent
+                explanation += "At least one sub-issue predicted for the Defendant.  Predicting issue " + issue['id'] + " for the Defendant.\n\n"
                 return DEFENDANT
             else:
+                explanation += "No sub-issues decided for the defendant, and at least one sub-issue abstained. Abstaining on issue " + issue['id'] + ".\n\n"
                 return ABSTAIN                   # else abstain
 
 
@@ -177,17 +189,20 @@ def predict_leaf_issue(case, issue_id, all_factors, cases, model):
 
     ## if issue not raised predict default winner
     if not issue_raised(case, issue['id'], model):
-        explanation += issue['id'] \
+        explanation += 'Issue ' + issue['id'] \
               +' has not been raised. predicting for: ' \
-              +issue['winner_if_unraised'] + '\n'
+              +issue['winner_if_unraised'] + '\n\n'
         return issue['winner_if_unraised']
     else:
         ## if issue raised and factors unanimously favor one side, predict it
         issue_factor_ids = issue_factors_in_case(case, issue)
-        explanation += 'factors in '+case['id']+' for '+issue['id']+': '+str(issue_factor_ids)+ '\n'
+        explanation += 'Factors in '+case['id']+' relevant to '+issue['id']+' are:\n\n'
+        for fid in issue_factor_ids:
+            explanation += "* " + all_factors[fid]['description'] + "\n"
+        explanation += '\n\n'
         side = factors_unanimous_for_side(issue_factor_ids, all_factors)
         if side:
-            explanation += 'all factors unanimously favor '+side+'\n'
+            explanation += 'All factors unanimously favor '+side+', predicting ' + issue['id'] + ' for ' + side+'.\n\n'
             return side
         else:
             return theory_testing(case, issue, issue_factor_ids, all_factors, cases, model)
@@ -196,10 +211,10 @@ def predict_leaf_issue(case, issue_id, all_factors, cases, model):
 def predict_issue(case, issue_id, factors, cases, model):
     global explanation
     issue = model['issues'][issue_id]
-    explanation += 'Analyzing case '+case['id']+'\n'
-    explanation += 'Predicting '+issue['id']+'\n'
+    explanation += 'Predicting '+issue['id']+'.\n\n'
 
     if issue['type'] in ['intermediate_issue', 'top_level_issue']:
+        explanation += "Predicting subissues\n\n"
         return predict_intermediate_issue(case, issue_id, factors, cases, model)
     elif issue['type'] == 'leaf_issue':
         return predict_leaf_issue(case, issue_id, factors, cases, model)
@@ -209,20 +224,24 @@ def predict_issue(case, issue_id, factors, cases, model):
 
 def predict_case(case, top_issue_id, factors, case_collection, model):
     global explanation
+    explanation = ""
+    
     assert top_issue_id in model['issues'], 'top issue '+top_issue_id+' not in domain model'
 
     # remove test case from collection if in there
     cases = list(filter(lambda c: not c['id'] == case['id'], case_collection['cases']))
+    
+    explanation += 'Making a prediction on issue ' + model['issues'][top_issue_id]['id'] + ' for case ' + case['id'] + '\n\n'
 
     pred = predict_issue(case, top_issue_id, factors, cases, model)
 
     if pred == ABSTAIN:
-        explanation += 'system is abstaining from prediction\n'
+        explanation += 'Not confident in the prediction, so abstaining.\n\n'
     else:
         correct = pred == case['winner']
-        explanation += 'prediction for '+case['id']+': '+pred
+        explanation += 'Prediction for '+case['id']+' on issue ' + model['issues'][top_issue_id]['id'] + ' is: '+pred+ '.\n\n'
         if correct:
-            explanation += ' which is CORRECT \n'
+            explanation += 'Compared to outcome of actual case, prediction is correct. \n\n'
         else:
-            explanation += ' which is INCORRECT \n'
+            explanation += 'Compared to outcome of actual case, prediction is incorrect. \n\n'
     return explanation
