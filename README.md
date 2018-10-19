@@ -7,7 +7,7 @@ Use the docassemble package manager to add the package from https://github.com/G
 ## Usage
 Install the package and run the explain\_lcbr\_test.yml interview to see the current state of development.
 ## Demo
-[Click here for a live demo](https://testda.roundtablelaw.ca/interview?i=docassemble.playground3%3Aexplain_lcbr_test.yml)
+[Click here for a live demo](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
 ## Current Issues:
 * The images in the collapsing lists don't display as expected, this appears to be a
   caching problem on machines that have a prior version of the javascript.
