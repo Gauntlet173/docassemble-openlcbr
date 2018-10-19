@@ -65,19 +65,29 @@ def case_from_collection(case_id, case_collection):
 ## https://pdfs.semanticscholar.org/24a4/7ca6f5b2ebec9e809bf19d2b0f0da3dcab81.pdf
 ## Note: The example in this version uses a slightly different domain model due to being a code migration from VJAP. One modification is that F14 and F25 are associated with improper means which is consistent with IBP domain model diagrams but inconsistent with the KG prediction trace in the referenced paper
 
+def get_test_case(test_case, factors):
+  # I just need a dict with two elements, an ID and a set of factors.
+  output = {}
+  output['id'] = 'your-test-case'
+  output['factors'] = set()
+  for f in factors:
+    if test_case.attr(f):
+      output['factors'].add(f)
+  return output
 
 #if __name__ == '__main__':
-def run_lcbr_test(file):
+def run_lcbr_test(file,test_case):
         #print("== open ibp test ==")
         # for this implementation I want it to take the file name from the sources folder of the docassemble package
         #data_files = parse_args()
         data_files = [file]
         factors, case_collections, domain_models = load_dataset(data_files)
-        case = case_from_collection('KG', case_collections['trade_secret_test'])
+        case = get_test_case(test_case, factors)
+        #log("case['factors'] is " + str(case['factors']), "info")
         p = DATree()
         p = ibp_explain.predict_case(case,
-                         'trade_secret_misappropriation',
-                         factors,
-                         case_collections['trade_secret_test'],
-                         domain_models['ibp_original'])
+                        'trade_secret_misappropriation',
+                        factors,
+                        case_collections['trade_secret_test'],
+                        domain_models['ibp_original'])
         return p
