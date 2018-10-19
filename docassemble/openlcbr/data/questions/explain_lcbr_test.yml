@@ -1,0 +1,52 @@
+features:
+  javascript: list_collapse.js
+  css: list_collapse.css
+---
+modules:
+  - .lcbr_explain
+  - .ibp_explain
+  - docassemble.base.util
+  - .DATree
+---
+objects:
+  - database: DAStaticFile.using(filename="data/sources/trade_secret_cases.yaml")
+  - explanation: DATree
+---
+mandatory: True
+question: docassemble-openlcbr demo
+subquestion: |
+  This website is a demonstration of the docassemble-openlcbr package being developed
+  by Jason Morris of Round Table Law as an ABA Innovation Fellowship project for
+  2018/2019.  The fellowship is sponsored by Clio.
+  
+  The project is to take openlcbr, which is an open-source tool for
+  legal case-based reasoning written by Matthias Grabmair, and to implement it as a
+  extension to docassemble.
+  
+  Docassemble is a leading open-source legal expert system and document automation
+  platform written by Jonathan Pyle.
+  
+  The purpose of the project is to explore whether it is possible to use
+  reasoning-by-analogy to extend the capabilities of legal expert systems to
+  include answering open-textured legal questions.
+  
+  Click below to continue and see the output of the system, which is generated
+  in real time by docassemble-openlcbr.
+  
+  Please be aware that you are viewing a testing
+  environment, and very frequently this interview will be broken.  That is as it
+  should be.
+field: intro_seen
+---
+if: intro_seen
+mandatory: True
+question: Your issue would be decided for the ${ prediction_word(explanation.prediction) }
+subquestion: |
+  ${ explanation.display_tree() }
+field: output_seen
+---
+mandatory: True
+code: |
+  explanation = run_lcbr_test(database.path())
+  
+---
