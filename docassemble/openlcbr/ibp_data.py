@@ -14,15 +14,17 @@ def export_issues_from_tree(target, source):
   target[str(source.id)]['winner_if_unraised'] = str(source.default)
   # If the current issue has antecedents, grab 'em.
   if source.branches.there_are_any:
-    target[str(source.id)]['antecedents'] = set()
+    # This uses a different format than the database provided by openlcbr
+    target[str(source.id)]['antecedents'] = []
     for b in source.branches:
-      target[str(source.id)]['antecedents'].add(str(b.id))
+      target[str(source.id)]['antecedents'].append(str(b.id))
     if source.join_type == "disjunctive":
       target[str(source.id)]['disjoint_antecedents'] = True
   else:
-    target[str(source.id)]['factors'] = set()
+    # This uses a different format than the database provided by openlcbr
+    target[str(source.id)]['factors'] = []
     for f in source.factors:
-      target[str(source.id)]['factors'].add(str(f.id))
+      target[str(source.id)]['factors'].append(str(f.id))
     
   for b in source.branches:
     export_issues_from_tree(target, b)
@@ -63,9 +65,10 @@ class DAIBPData(DAObject):
       newcase['year'] = str(c.year)
       newcase['winner'] = word_to_side(str(c.winner))
       newcase['citation'] = str(c.cite)
-      newcase['factors'] = set()
+      # This uses a different format than the database provided by openlcbr
+      newcase['factors'] = []
       for f in c.factors:
-        newcase['factors'].add(str(f.id))
+        newcase['factors'].append(str(f.id))
       collection['cases'].append(newcase)
     # Domain Models
     output['domain_models'] = {}
@@ -81,7 +84,7 @@ class DAIBPData(DAObject):
       export_issues_from_tree(issues, model.issues)
     
     #The second step is to spit it out in yaml.
-    return yaml.dump(output)
+    return yaml.dump(output,default_flow_style=False)
     
   #def read(self, file, *pargs, **kwargs):
     #In here, define the code that it should use to load all of the elements into the data structure.
