@@ -7,7 +7,7 @@ class DATree(DAObject):
   def init(self, *pargs, **kwargs):
     self.initializeAttribute('branches',DAList)
     self.branches.object_type = DATree
-    self.branches.there_is_another = False
+    #self.branches.there_is_another = False
     return super(DATree, self).init(*pargs, **kwargs)
   def summary(self):
     # Return the Root Object

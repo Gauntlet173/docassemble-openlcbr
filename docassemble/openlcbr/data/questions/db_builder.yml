@@ -1,0 +1,427 @@
+features:
+  navigation: True
+  javascript: list_collapse.js
+  css: list_collapse.css
+---
+sections:
+  - Introduction
+  - Factors
+  - Cases
+  - Issues
+  - Conclusion
+---
+modules:
+  - docassemble.base.core
+  - docassemble.base.util
+  - .ibp_data
+---
+metadata:
+  comments: |
+    This is an interview designed to allow you to do the data entry to generate an IBP
+    model and database for use with docassemble-openlcbr.
+    
+    To Do:
+    Write intros.
+    Implement review for issues.
+    Correct problems in output format (!!Set)
+    Input Validation
+      - Require specifying at least two antecedent issues.
+    Edit Existing File.
+---
+objects:
+  - factors: DAList.using(object_type=DAObject)
+  - cases: DAList.using(object_type=DAIBPCase)
+  - model: DAObject
+  - model.ko_factors: DAList
+  - model.issues: DAIBPIssue
+  - data: DAIBPData
+  - database: DAFile
+---
+mandatory: True
+code: |
+  # This is the main flow code block.
+  
+  # This sets the type of the root object so it won't be calculated.
+  model.issues.type = "top"
+  
+  # This forces the root of the issues tree to be collected completely.
+  model.issues.branches.complete_attribute = "complete"
+  factors.complete_attribute = "complete"
+  cases.complete_attribute = "complete"
+  
+
+  intro
+  factors_intro
+  factors.gather()
+  factors_reviewed
+  
+  cases_intro
+  cases.gather()
+  cases_reviewed
+
+  model_intro
+  # The way we collect factors is all at once.
+  model.ko_factors.there_is_another = False
+  # Collecting this variable forces it to recursively collect the tree if there
+  # are issues to collect.
+  if model.issues.build:
+    model.issues.complete
+  database.initialize(filename="da-openlcbr.yml")
+  yaml_output = data.output_yaml(factors, cases, model)
+  database.write(yaml_output)
+  summary
+---
+generic object: DAIBPIssue
+code: |
+  # This forces a collection of a DAIBPIssue's sub-issues before it is complete
+  x.branches.complete_attribute = "complete"
+  x.id
+  x.text
+  for y in x.branches:
+    y.complete
+  if x.branches.there_are_any:
+    x.type = "int"
+    x.join_type
+  else:
+    x.type = "leaf"
+    x.factors.gather()
+  x.complete = True
+---
+code: |
+  if factors[i].id:
+    factors[i].complete = True
+  else:
+    factors[i].complete = False
+---
+code: |
+  if cases[i].id:
+    cases[i].complete = True
+  else:
+    cases[i].complete = False
+---
+mandatory: True
+question: |
+  Download Your OpenLCBR Database
+subquestion: |
+  Congratulations, your openlcbr database has been generated, and can be downloaded
+  below.  To use this database, upload it to the "sources" section of your
+  docassemble playground, and provide it to the docassemble-openlcbr software as
+  described in the documentation.
+  
+  [Click here to download your database]
+  
+  [Click here to download your database]: ${ database.url_for() }
+sets: summary
+section: Conclusion
+---
+mandatory: True
+question: |
+  Analogical Case-Based Reasoner Builder
+subquestion: |
+  This interview will take you step-by-step through the process of building an
+  analogical case-based reasoner for use with docassemble-openlcbr.
+  
+  Docassemble-openlcbr is the ABA Innovation Fellowship project of Jason Morris 
+  of Round Table Law for the 2018/2019 year.  It is generously sponsored by Clio.
+  
+  This interview is provided without warranty and as-is.  It is currently in
+  active development.
+  
+  **This is pre-beta software and should not be used in production environments.**
+  
+  If you become aware of problems with it, please report an issue at
+  [the GitHub page for docassemble-openlcbr].
+  
+  ###Known Issues
+  * The final output file does not correctly format factor sets associated with
+    cases and issues.
+  * There is no input validation, so it is very easy to create a database that will
+    not work.
+  
+  ###Planned Work
+  * Make it possible for an administrator to use this interview to edit an existing
+    database in the docassemble playground.
+  * Make it possible for a docassemble administrator to save an edited database
+    directly to the docassemble playground.
+  * Make it possible to review the issues model before completing the interview.
+  
+  [the GitHub page for docassemble-openlcbr]: https://github.com/Gauntlet173/docassemble-openlcbr
+field: intro
+section: Introduction
+---
+question: |
+  What are the details of the ${ ordinal(i) } factor?
+fields:
+  - Internal ID: factors[i].id
+    help: |
+      This will be used internally only, and will not be displayed to the users.
+  - Which Side Does This Factor Favour?: factors[i].side
+    datatype: radio
+    choices:
+      - Defendant
+      - Plaintiff
+  - Short Description: factors[i].name
+  - Long Description: factors[i].long_desc
+    datatype: area
+    help: |
+      The long description should fill in the blank in the sentence "In this case, it was true that ___."
+section: Factors
+---
+if: intro
+question: |
+  Do you want to enter a list of factors?
+yesno: factors.there_are_any
+section: Factors
+---
+question: |
+  Do you want to add another factor?
+yesno: factors.there_is_another
+section: Factors
+---
+question: |
+  Do you want to specify the knock-out factors for your model?
+yesno: model.ko_factors.there_are_any
+---
+question: |
+  Which of the factors in the system are the knock-out factors for your system?
+fields:
+  - Knock Out Factors: model.ko_factors
+    datatype: object_checkboxes
+    choices:
+      factors
+section: Issues
+---
+question: |
+  Do you want to enter a list of cases?
+yesno: cases.there_are_any
+section: Cases
+---
+question: |
+  Do you want to add another case?
+yesno: cases.there_is_another
+section: Cases
+---
+question: |
+  What are the details of the ${ ordinal(i) } case?
+fields:
+  - Case ID: cases[i].id
+  - Case Name: cases[i].name
+  - Year Decided: cases[i].year
+  - Citation: cases[i].cite
+  - Winner: cases[i].winner
+    datatype: radio
+    choices:
+      - Plaintiff
+      - Defendant
+  - Factors Present In This Case: cases[i].factors
+    datatype: object_checkboxes
+    choices:
+      factors
+section: Cases
+---
+question: |
+  Do you want to specify an issue database?
+yesno: model.issues.build
+section: Issues
+---
+if: model.issues.build
+generic object: DAIBPIssue
+question:
+  What are the details of this new sub-issue issue ${ x.text }?
+fields:
+  - Issue ID: x.branches[i].id
+  - Issue Name: x.branches[i].text
+  - Winner If Unraised: x.branches[i].default
+    required: False
+    datatype: radio
+    choices:
+      - Plaintiff: 'p'
+      - Defendant: 'd'
+section: Issues
+---
+if: model.issues.build
+generic object: DAIBPIssue
+question:
+  What are the details of the root legal issue?
+fields:
+  - Issue ID: model.issues.id
+  - Issue Name: model.issues.text
+  - Winner If Unraised: model.issues.default
+    required: False
+    datatype: radio
+    choices:
+      - Plaintiff: 'p'
+      - Defendant: 'd'
+section: Issues
+---
+generic object: DAIBPIssue
+question: Does the issue ${ x.text } have any sub-issues?
+yesno: x.branches.there_are_any
+section: Issues
+---
+generic object: DAIBPIssue
+question: Does the issue ${ x.text } have another sub-issue?
+subquestion: |
+  The subissues you have indicated so far are:
+  % for b in x.branches:
+  ${ b.text }
+  % endfor
+yesno: x.branches.there_is_another
+section: Issues
+---
+generic object: DAIBPIssue
+if: x.type <> 'leaf'
+question: |
+  Are the sub-issues of ${ x.text } conjunctive, or disjunctive?
+subquestion: |
+  The sub-issues are conjunctive if all of them must be true for ${ x.text } to be true.
+  They are disjunctive if ${ x.text } is true whan any of the sub-issues is true.
+  
+  The sub-issues you have indicated are
+  % for b in x.branches:
+  ${ b.text }
+  % endfor
+  
+fields:
+  - Join Type: x.join_type
+    datatype: radio
+    default: Conjunctive
+    choices:
+      - Conjunctive: 'conjunctive'
+      - Disjunctive: 'disjunctive'
+section: Issues
+---
+generic object: DAIBPIssue
+sets: x.factors.there_are_any
+question:
+  What are the factors relevant to the issue ${ x.text }?
+fields:
+  - Factors For This Issue: x.factors
+    datatype: object_checkboxes
+    choices:
+      factors
+section: Issues
+---
+table: factor_table
+rows: factors
+columns:
+  - ID: row_item.id
+  - Name: row_item.name
+  - Side: row_item.side
+edit:
+  - id
+---
+question: Review Your Factors
+subquestion: |
+ Use the table below to review your factors and make any required changes.
+ ${ factor_table }
+ ${ factors.add_action() }
+section: Factors
+field: factors_reviewed
+---
+table: case_table
+rows: cases
+columns:
+  - ID: row_item.id
+  - Name: row_item.name
+  - Year: row_item.year
+edit:
+  - id
+  - factors
+---
+question: Review Your Cases
+subquestion: |
+  Use the table below to review the cases that you have entered and make any required
+  changes.
+  ${ case_table }
+  ${ cases.add_action() }
+section: Cases
+field: cases_reviewed
+---
+field: factors_intro
+question: Factors
+subquestion: |
+  The first piece of information that the analogical reasoner will require is a list
+  of the relevant "factors." A factor is a fact which may be true or false, and which
+  makes it more or less likely that a legal issue will be determined for the Plaintiff.
+  
+  A factor includes an ID, a favored side, a short description, and a long description.
+  
+  The ID can be any unique sequence of letters and numbers.
+  
+  The favoured side will be "Plaintiff" if the presence of that factor makes it more
+  likely that the Plaintiff will win on the root legal issue.  The favoured side
+  is "Defendant" if the presence of the factor makes success less likely for the
+  Plaintiff.
+  
+  The short description will seldom be used.  The long description should fill in the
+  blank in the sentence "in this case, it was true that the ______________", and will
+  usually start with either the word "defendant" or the word "plaintiff."
+---
+field: cases_intro
+question: Cases
+subquestion: |
+  Now that we know what the relevant factors are, we need to give the analogical
+  reasoner a set of cases to search.
+  
+  Each case includes an ID, a name, a citation, a year, a winner, and a list of
+  factors that were present in that case.
+  
+  The ID can be any unique sequence of letters and numbers.
+  
+  The name is usually the style of cause of the case, such as "Joe v Schmoe".
+  
+  The citation is exactly what it sounds like. It tells the user where to find the
+  original details on the case.
+  
+  The year is the year in which the case was decided.  This is not used by the
+  algorithm, but is used to distinguish between multiple cases between the same
+  parties.
+  
+  The winner is either Plaintiff or Defendant, depending on what happened at court.
+  
+  Lastly, the database needs a list of all of the factors which were present in that
+  case.
+---
+field: model_intro
+question: Model
+subquestion: |
+  Now that you have specified the factors and the cases, it is time to describe the
+  analogical model of the case.  This has two parts: knock-out factors, and issues.
+  
+  The knock-out factors are just a subset of the factors in the database which can be
+  used to distinguish cases.  If the factor existing in the test case and not existing
+  in a case in the database would be a good reason to ignore the case in the database,
+  that factor is a knock-out factor.
+  
+  Once you have specified knock-out factors, you will need to specify the issues.
+  
+  Each issue has an ID, a name. The ID can be any unique sequence of letters and numbers.
+  The name usually can be used to fill in the blank in the following setence:
+  "it was found that _________________".
+  
+  An issue may also have a default winner specified.  If there is a presumption in
+  favour of the defendant or the plaintiff with regard to an issue, you can indicate
+  that by specifying for whom the issue should be decided if none of the factors in
+  the test case are relevant to that issue.
+  
+  Your issue will be one of three types.  Root, branch, or leaf.
+  
+  The root issue is the main legal issue that your legal reasoning tool is designed
+  to answer.  It may act as a branch, or as a leaf, depending on whether it has
+  any "sub-issues."
+  
+  A branch issue is one that has sub-issues.  If you specify sub-issues for an issue,
+  you must also indicate whether all of those sub-issues must be found for the
+  plaintiff in order for the branch issue to be found for the plaintiff (conjunctive
+  sub-issues), or if it is
+  enough that any one of the sub-issues are found for the plaintiff (disjunctive
+  sub-issues).
+  
+  On the other hand, an issue that does not have sub-issues is a leaf issue. For leaf
+  issues, you will also need to specify the factors that are relevant to that issue.
+  Include both the factors that support the plaintiff and those that support the 
+  defendant.
+  
+  
+  
