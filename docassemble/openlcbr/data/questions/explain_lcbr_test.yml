@@ -117,5 +117,8 @@ subquestion: |
 mandatory: True
 code: |
   explanation = run_lcbr_test(database.path(), test_case)
-  
+---
+generic object: DATree
+code: |
+  x.branches.there_is_another = False
 ---

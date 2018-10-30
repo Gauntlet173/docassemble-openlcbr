@@ -50,6 +50,7 @@ def filter_plaintiff_factor_ids(factor_ids, all_factors):
 def predict_case(case, top_issue_id, factors, case_collection, model):
     #log("Predicting a case. We got this far.", "info")
     explanation = DATree('explanation')
+    explanation.branches.there_is_another = False
     
     
     assert top_issue_id in model['issues'], 'top issue '+top_issue_id+' not in domain model'
@@ -66,6 +67,7 @@ def predict_case(case, top_issue_id, factors, case_collection, model):
 def predict_issue(case, issue_id, factors, cases, model):
   #log("Predicting issue " + issue_id, "info")
   explanation = DATree('predict_issue_explanation')
+  explanation.branches.there_is_another = False
   issue = model['issues'][issue_id]
   
   #    if it's a leaf issue, predict it, and return the prediction.
@@ -81,6 +83,7 @@ def predict_issue(case, issue_id, factors, cases, model):
       #        create a sub-node
       #        set the value of that sub-node to the prediction for the subissue by calling predict issue.
       subexplanation = DATree('subexplanation')
+      subexplanation.branches.there_is_another = False
       subexplanation = predict_issue(case, subissue, factors, cases, model)
       explanation.branches.append(subexplanation)      
 
@@ -153,6 +156,7 @@ def predict_leaf_issue(case, issue_id, factors, cases, model):
   #log("Predicting leaf issue " + issue_id, "info")
   #Create a node object to return
   explanation = DATree('predicting_leaf_issue_explanation')
+  explanation.branches.there_is_another = False
   issue = model['issues'][issue_id]
   
   # See if the issue was raised
@@ -172,6 +176,7 @@ def predict_leaf_issue(case, issue_id, factors, cases, model):
   
   #log("Checking unanimity.", "info")
   factor_unanimity_explanation = DATree('factor_unanimity_explanation')
+  factor_unanimity_explanation.branches.there_is_another = False
   factor_unanimity_explanation = predict_leaf_issue_by_factor_unanimity(case, factors)
   explanation.branches.append(factor_unanimity_explanation)
   if factor_unanimity_explanation.prediction != ABSTAIN:
@@ -182,6 +187,7 @@ def predict_leaf_issue(case, issue_id, factors, cases, model):
   
   #log("Checking theory.", "info")
   theory_explanation = DATree('theory_explanation')
+  theory_explanation.branches.there_is_another = False
   theory_explanation = predict_leaf_by_theory(case, issue_id, issue_factors_in_case(case, issue), factors, cases, model)
   explanation.branches.append(theory_explanation)
   explanation.prediction = theory_explanation.prediction
@@ -197,6 +203,7 @@ def predict_leaf_issue(case, issue_id, factors, cases, model):
 def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model, broadened_query = False):
   #log("Predicting leaf issue by theory ", "info")
   explanation = DATree('predict_leaf_by_theory_explanation')
+  explanation.branches.there_is_another = False
   issue = model['issues'][issue_id]
   relevant_cases = cases_with_factors(theory_factors, cases)
   ko_factors = model['ko_factors']
@@ -204,9 +211,11 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
   #log("generating relevant factors list", "info")
   if not broadened_query:
     relevant_factors_list = DATree('relevant_factors_list')
+    relevant_factors_list.branches.there_is_another = False
     relevant_factors_list.text = "The factors in the test case relevant to the issue are:"
     for f in theory_factors:
       factor_entry = DATree('factor_entry')
+      factor_entry.branches.there_is_another = False
       factor_entry.text = "Whether the " + factors[f]['description'] + "."
       relevant_factors_list.branches.append(factor_entry)
     explanation.branches.append(relevant_factors_list)
@@ -215,10 +224,12 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
   p_cases, d_cases, case_count = 0, 0, 0
   if relevant_cases: #does this work?
     relevant_cases_list = DATree('relevant_cases_list')
+    relevant_cases_list.branches.there_is_another = False
     relevant_cases_list.text = "The cases sharing all of these factors with the test case are:"
     for c in relevant_cases:
       case_count = case_count+1
       case_entry = DATree('case_entry')
+      case_entry.branches.there_is_another = False
       case_entry.text = c['id'] + ", which was decided for the " + prediction_word(c['winner']) + "."
       relevant_cases_list.branches.append(case_entry)
       if c['winner'] == PLAINTIFF:
@@ -228,6 +239,7 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
     explanation.branches.append(relevant_cases_list)
   else:
     no_relevant_cases = DATree('no_relevant_cases')
+    no_relevant_cases.branches.there_is_another = False
     no_relevant_cases.text = "There are no cases sharing all of these factors with the test case."
     explanation.branches.append(no_relevant_cases)
     
@@ -246,9 +258,11 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
       
       
       ko_factor_list = DATree('ko_factor_list')
+      ko_factor_list.branches.there_is_another = False
       ko_factor_list.text = "The following factors may be used to distinguish cases from one another:"
       for kof in ko_factors:
         ko_factor_entry = DATree('ko_factor_entry')
+        ko_factor_entry.branches.there_is_another = False
         ko_factor_entry.text = "Whether the " + factors[kof]['description'] + "."
         ko_factor_list.branches.append(ko_factor_entry)
       explanation.branches.append(ko_factor_list)
@@ -256,16 +270,19 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
       all_explained_away = True
       for c in filter_defendant_cases(relevant_cases):
         ko_attempt_entry = DATree('ko_attempt_entry')
+        ko_attempt_entry.branches.there_is_another = False
         explanation.branches.append(ko_attempt_entry)
         unshared_ko_factors = case_ko_factors(c, model) - set(case['factors'])
         if unshared_ko_factors:
           #log("UKF: " + str(unshared_ko_factors), "info")
           ukf_list = DATree('ukf_list')
+          ukf_list.branches.there_is_another = False
           ukf_list.text = "The distinguishing factors not common between the test case and " + c['id'] + " include:"
           ko_attempt_entry.text = "The case " + c['id'] + " can be distinguished from the test case."
           ko_attempt_entry.branches.append(ukf_list)
           for ukf in unshared_ko_factors:
             ukf_entry = DATree('ukf_entry')
+            ukf_entry.branches.there_is_another = False
             ukf_entry.text = "Whether the " + factors[ukf]['description'] + "."
             ukf_list.branches.append(ukf_entry)
         else:
@@ -289,8 +306,10 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
     broadened_all_plaintiff = True
     for pf_id in relevant_p_factors:
       broad_entry = DATree('broad_entry')
+      broad_entry.branches.there_is_another = False
       broad_entry.text = "Considering cases that share all relevant factors except whether the " + factors[pf_id]['description'] + "."
       broad_result = DATree('broad_result')
+      broad_result.branches.there_is_another = False
       broad_result = predict_leaf_by_theory(case,
                                             issue_id,
                                             [f_id for f_id in relevant_p_factors if not f_id == pf_id],
@@ -324,13 +343,14 @@ def predict_leaf_by_theory(case, issue_id, theory_factors, factors, cases, model
 def predict_leaf_issue_by_factor_unanimity(case, factors):
   #log("Predicting issue by factor unanimity", "info")
   explanation = DATree('predict_leaf_issue_by_factor_unanimity_explanation')
-  
+  explanation.branches.there_is_another = False
   # Get the way the factors lean
   #log("Setting variables", "info")
   case_factor_count, plaintiff_factors, defendant_factors = 0, 0, 0
   for factor in case['factors']:
     #log("Checking factor " + factor, "info")
     factor_description = DATree('factor_description')
+    factor_description.branches.there_is_another = False
     factor_description.text = "The factor of whether the " + factors[factor]['description'] + " favours the " + prediction_word(factors[factor]['favored_side']) + "."
     explanation.branches.append(factor_description)
     case_factor_count = case_factor_count+1

@@ -10,7 +10,6 @@ Load the db\_builder.yml interview for an interview that will assist you in buil
 your own analogical reasoning tools for use with docassemble-openlcbr.
 ## Demo
 [Click here for a live demo of what the user sees](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
-
 [Click here for a live demo of how to build a reasoner](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fdb_builder.yml)
 ## Current Issues:
 * The images in the collapsing lists don't display as expected, this appears to be a
