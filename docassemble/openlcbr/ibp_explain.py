@@ -180,7 +180,7 @@ def predict_leaf_issue(case, issue_id, factors, cases, model):
   factor_unanimity_explanation = predict_leaf_issue_by_factor_unanimity(case, factors)
   explanation.branches.append(factor_unanimity_explanation)
   if factor_unanimity_explanation.prediction != ABSTAIN:
-    explanation.prediction = unanimity_explanation.prediction
+    explanation.prediction = factor_unanimity_explanation.prediction
     explanation.text = "All of the relevant factors with regard to whether it is true that " \
       + "the " + issue['proposition'] + " favour the  " + prediction_word(explanation.prediction) + "."
     return explanation

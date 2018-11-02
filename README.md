@@ -11,6 +11,8 @@ your own analogical reasoning tools for use with docassemble-openlcbr.
 ## Demo
 [Click here for a live demo of what the user sees](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
 
+[Click here for a live demo with option to select Data from Clio via API](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fclio_openlcbr_demo.yml)
+
 [Click here for a live demo of how to build a reasoner](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fdb_builder.yml)
 ## Current Issues:
 * The images in the collapsing lists don't display as expected, this appears to be a
@@ -27,13 +29,13 @@ your own analogical reasoning tools for use with docassemble-openlcbr.
 * Changed explanation output to be natural language, narrative.
 * Updated interview and lcbr to run the reasoner against a case specified by the user.
 * Added an interview capable of building an openlcbr database from scratch.
+* Added the ability to automatically generate a test-case query screen from the data source.
+* Created demonstration interview which gets case data from Clio via API.
 ## Work Plan
-* Automatically generate a test-case query interview based on an openlcbr factor database.
 * Generate a new demonstration analogical reasoning database in a family law issue.
 * Integrate the analogical reasoning tool with a wider-purpose demonstration interview.
 * Allow convenient editing of existing openlcbr analogical reasoning databases on the server.
 * Make the codebase less brittle.
 * Create documentation and tutorials explaining how to use the system.
-* Integrate with Clio for selecting a test case.
 * Integrate with Clio to use matters in a firm's database as a datasource for a
   predictive model.

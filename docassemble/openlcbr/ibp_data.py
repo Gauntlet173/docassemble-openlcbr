@@ -1,6 +1,7 @@
 from docassemble.base.core import DAObject, DAList, DADict, DASet
 from docassemble.base.util import *
 from DATree import *
+from lcbr_explain import *
 import yaml
 
 def export_issues_from_tree(target, source):
@@ -39,9 +40,23 @@ def word_to_side(word):
   else:
     return '?'
 
-class DAIBPData(DAObject):  
+
+  
+class DAIBPData(DAObject):
   def init(self, *pargs, **kwargs):
     return super(DAIBPData, self).init(*pargs, **kwargs)
+  def load(self, database):
+    self.datafile = database.path()
+    data_files = []
+    data_files.append(database.path())
+    self.factors, self.case_collections, self.domain_models = load_dataset(data_files)
+    self.factorslist = DADict('factors')
+    for f in self.factors:
+      id = self.factors[f]['id']
+      description = self.factors[f]['description']
+      self.factorslist[id] = description
+    self.factorslist.there_is_another = False
+    
   def output_yaml(self, factors, cases, model):
     # The first step is to generate a basic python structure with no objects for the data
     output = {}
@@ -85,65 +100,39 @@ class DAIBPData(DAObject):
     
     #The second step is to spit it out in yaml.
     return yaml.dump(output,default_flow_style=False)
+
+  def predict(self, test_case):
+    case ={}
+    case['id'] = 'your-test-case'
+    case['factors'] = set()
+    for f in self.factors:
+      #log("Checking if " + f + " is true in test case", "info")
+      if f in test_case.factors:
+        #log("True, adding.", "info")
+        case['factors'].add(f)
+    p = DATree()
+    p = ibp_explain.predict_case(case,
+                        'trade_secret_misappropriation',
+                        self.factors,
+                        self.case_collections['trade_secret_test'],
+                        self.domain_models['ibp_original'])
+    return p
+  
+  def get_factor_id_by_proposition(self, prop):
+    for f in self.factors:
+      if self.factors[f]['proposition'] == prop:
+        return self.factors[f]['id']
     
-  #def read(self, file, *pargs, **kwargs):
-    #In here, define the code that it should use to load all of the elements into the data structure.
-    #pass
-    
-  #def write(self, file, *pargs, **kwargs):
-    #Here would be the code to output the contents of the data structure to YAML.
-    #pass
-
-#class DAIBPCaseCollections(DAList):  
-  #def init(self, *pargs, **kwargs):
-    #self.name = "case_collections"
-    #self.object_type = "DAIBPCaseCollection"
-    #return super(DAIBPCaseCollections, self).init(*pargs, **kwargs)
-
-#class DAIBPCaseCollection(DAList):  
-  #def init(self, *pargs, **kwargs):
-    #self.initializeAttribute('id')
-    #self.initializatAttribute('cases',DAIBPCases)
-    #return super(DAIBPCaseCollection, self).init(*pargs, **kwargs)
-
-#class DAIBPCases(DAList):
-  #def init(self, *pargs, **kwargs):
-    #self.name = "cases"
-    #self.object_type = "DAIBPCase"
-    #return super(DAIBPCases, self).init(*pargs, **kwargs)
-
+  
 class DAIBPCase(DAObject):
   def init(self, *pargs, **kwargs):
-    self.initializeAttribute('factors',DAList)
-    return super(DAIBPCase, self).init(*pargs, **kwargs)
-  
-#class DAIBPDomainModel(DAObject):
-  #def init(self, *pargs, **kwargs):
-    #self.initializeAttribute('ko_factors',DAList)
-    #self.initializeAttribute('issues',DAIBPIssues)
-    #return super(DAIBPDomainModel, self).init(*pargs, **kwargs)
+    super(DAIBPCase, self).init(*pargs, **kwargs)
+    self.initializeAttribute('factors',DADict)
+    
 
-#class DAIBPIssues(DAObject):
-  #def init(self, *pargs, **kwargs):
-    #self.name = "issues"
-    #self.object_type = "DAIBPIssue"
-    #return super(DAIBPIssues, self).init(*pargs, **kwargs)
-  
 class DAIBPIssue(DATree):
   def init(self, *pargs, **kwargs):
     super(DAIBPIssue, self).init(*pargs, **kwargs)
     self.initializeAttribute('factors',DAList)
     self.branches.object_type = DAIBPIssue
-
-#class DAIBPFactors(DAList):
-  #def init(self, *pargs, **kwargs):
-    #self.object_type = "DAIBPFactor"
-    #return super(DAIBPFactors, self).init(*pargs, **kwargs)
-
-#class DAIBPFactor(DAObject):
-  #def init(self, *pargs, **kwargs):
-    #return super(DAIBPFactor, self).init(*pargs, **kwargs)
-
-
-  
   
