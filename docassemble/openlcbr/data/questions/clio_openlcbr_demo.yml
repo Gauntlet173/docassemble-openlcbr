@@ -1,13 +1,13 @@
 features:
-  javascript: list_collapse.js
-  css: list_collapse.css
+  javascript: docassemble.openlcbr:data/static/list_collapse.js
+  css: docassemble.openlcbr:data/static/list_collapse.css
 ---
 modules:
-  - .lcbr_explain
-  - .ibp_explain
+  - docassemble.openlcbr.lcbr_explain
+  - docassemble.openlcbr.ibp_explain
   - .ibp_data
   - docassemble.base.util
-  - .DATree
+  - docassemble.openlcbr.DATree
   - .DAClio
 ---
 objects:
@@ -16,18 +16,19 @@ objects:
   - explanation: DATree
   - test_case: DAIBPCase
 ---
-initial: True
-code: |
-  process_action()
-
----
 mandatory: True
 code: |
-  reasoner.load(database)
   # This is the ID for the Trade Secret practice area on the test Clio site
   # It will need to be changed if you are running against a different Clio service.
   trade_secrets = 13144306
+  
+  # This is the ID for the picklist item in the test Clio account which
+  # indicates that the Plaintiff was the winner of the case. It will
+  # need to be changed for your implementation.
+  plaintiff_winner = 2260081
+  
   intro_seen
+  load_data
   use_custom_data
   if not use_custom_data:
     for k,v in custom_fields.iteritems():
@@ -37,6 +38,62 @@ code: |
   else:
     # Deleting the test_case.factors attribute forces the interview to collect it again.
     del test_case.factors
+---
+code: |
+  if download_clio_data:
+    reasoner.load_model_only(database)
+    precedents = get_bulk_custom_fields_in_pa(trade_secrets)
+    displayed_clio_data
+    for p in precedents:
+      # create a case object
+      new_case = DAIBPCase()
+      new_case.id = p['display_number']      
+      for cfv in p['custom_field_values']:
+        if cfv['field_name'] == "winner":
+          if cfv['value'] == plaintiff_winner:
+            new_case.winner = 'Plaintiff'
+          else:
+            new_case.winner = 'Defendant'
+        else:
+          if cfv['value'] == True:
+            new_case.factors[reasoner.get_factor_id_by_proposition(cfv['field_name'])] = reasoner.get_factor_id_by_proposition(cfv['field_name'])
+      new_case.factors.there_is_another = False
+      reasoner.add_precedent_case(new_case)
+  else:
+    reasoner.load(database)
+  load_data = True
+---
+question: Choose a Data Source
+subquestion: |
+  The analogical reasoning tool will compare your test case to a database of prior
+  cases.
+  
+  Would you like to use the database of cases stored locally to the interview server,
+  or would you like to run the analysis against data stored in Clio account?
+field: download_clio_data
+buttons:
+  - "Use Local Data": False
+  - "Download Data From Clio": True
+---
+question: Data Downloaded From Clio
+subquestion: |
+  The docassemble server has connected with Clio via API and downloaded the following
+  matters. Scroll to the bottom and press "continue" to proceed.
+  
+  % for p in precedents:
+  * **${ p['display_number'] }**
+  % for cfv in p['custom_field_values']:
+  % if cfv['field_name'] == "winner":
+  won by
+  % if cfv['value'] == plaintiff_winner:
+  plaintiff.
+  % else:
+  defendant.
+  % endif
+  % endif
+  % endfor
+  % endfor
+field: displayed_clio_data
 ---
 question: docassemble-openlcbr demo
 subquestion: |
@@ -56,14 +113,14 @@ subquestion: |
   include answering open-textured legal questions.
 field: intro_seen
 ---
-question: Choose a Data Source
+question: Choose a Test-Case Data Source
 subquestion: |
   Docassemble can be configured to use data located in your law firm's practice
   management software.
   
   Would you like to run the analogical reasoning tool against
   a case that you describe, or would you like to select a matter from a demonstration
-  Clio service?
+  Clio account?
 field: use_custom_data
 buttons:
   - "Choose an Open Clio Matter": False
@@ -71,10 +128,23 @@ buttons:
 ---
 if: use_custom_data == True
 question: Which of the following factors apply to the test case?
+subquestion: |
+  Please check off the boxes for all the factors that are true in your test case.
+  
+  For your convenience, a default set of factors which will demonstrate most of
+  the features of the openlcbr analogical reasoner have been pre-selected.
 fields:
   - no label: test_case.factors
     datatype: checkboxes
     code: reasoner.factorslist
+    default:
+      - F21
+      - F18
+      - F15
+      - F14
+      - F6
+      - F25
+      - F16
 ---
 generic object: DATree
 code: |
@@ -107,5 +177,9 @@ subquestion: |
   ${ explanation.display_tree() }
 ---
 code: |
-  explanation = reasoner.predict(test_case)
+  if download_clio_data:
+    explanation = reasoner.predict(test_case)
+  else:
+    explanation = reasoner.predict(test_case,'trade_secret_test')
 ---
+

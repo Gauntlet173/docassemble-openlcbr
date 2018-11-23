@@ -10,6 +10,9 @@ sections:
   - Issues
   - Conclusion
 ---
+imports:
+  - re
+---
 modules:
   - docassemble.base.core
   - docassemble.base.util
@@ -21,9 +24,7 @@ metadata:
     model and database for use with docassemble-openlcbr.
     
     To Do:
-    Write intros.
     Implement review for issues.
-    Correct problems in output format (!!Set)
     Input Validation
       - Require specifying at least two antecedent issues.
     Edit Existing File.
@@ -36,6 +37,7 @@ objects:
   - model.issues: DAIBPIssue
   - data: DAIBPData
   - database: DAFile
+  - upload: DAFile
 ---
 mandatory: True
 code: |
@@ -49,27 +51,160 @@ code: |
   factors.complete_attribute = "complete"
   cases.complete_attribute = "complete"
   
+  # If the line below is uncommented it does a bunch of things to simplify testing.
+  #testing_issue_review
 
   intro
-  factors_intro
-  factors.gather()
+  use_existing_or_new
+  
+  if not use_existing:
+    factors_intro
+    factors.gather()
   factors_reviewed
   
-  cases_intro
-  cases.gather()
+  if not use_existing:
+    cases_intro
+    cases.gather()
   cases_reviewed
 
-  model_intro
-  # The way we collect factors is all at once.
-  model.ko_factors.there_is_another = False
-  # Collecting this variable forces it to recursively collect the tree if there
-  # are issues to collect.
-  if model.issues.build:
-    model.issues.complete
+  if not use_existing:
+    model_intro
+    # The way we collect factors is all at once.
+    model.ko_factors.there_is_another = False
+    # Collecting this variable forces it to recursively collect the tree if there
+    # are issues to collect.
+    if model.issues.build:
+      model.issues.complete
+  issues_reviewed
+  
   database.initialize(filename="da-openlcbr.yml")
   yaml_output = data.output_yaml(factors, cases, model)
   database.write(yaml_output)
   summary
+---
+code: |
+  #This block of code creates some issues, and answers some questions so that you
+  #can go straight to the issue review page with data already there.
+  use_existing_or_new = True
+  use_existing = False
+  factors.there_are_any = False
+  #factors_reviewed = True
+  cases.there_are_any = False
+  cases_reviewed = True
+  model.issues.build = True
+  model.issues.complete = True
+  model.ko_factors.there_are_any = False
+  
+  
+  
+  factor1 = DAObject()
+  factor2 = DAObject()
+  factor3 = DAObject()
+  factor1.id = "F1"
+  factor1.text = "first factor"
+  factor1.side = 'p'
+  factors.append(factor1)
+  factor2.id = "F2"
+  factor2.text = "second factor"
+  factor2.side = 'p'
+  factors.append(factor2)
+  factor3.id = "F3"
+  factor3.text = "third factor"
+  factor3.side = 'p'
+  factors.append(factor3)
+  
+  model.issues.id = "Root Issue"
+  model.issues.text = "Root Issue Long Version"
+  model.issues.default = 'p' 
+  model.issues.join_type = 'conjunctive'
+  model.issues.factors.gathered = True
+  model.issues.branches.gathered = True
+  
+  sub1 = DAIBPIssue()
+  sub2 = DAIBPIssue()
+  sub1sub1 = DAIBPIssue()
+  sub2sub1 = DAIBPIssue()
+  sub1sub2 = DAIBPIssue()
+  sub2sub2 = DAIBPIssue()
+  
+
+  
+  sub1.id = "First SubIssue"
+  sub1.text = "First Sub Issue Long Version"
+  sub1.default = 'p'
+  sub1.join_type = 'conjunctive'
+  sub1.factors.gathered = True
+  sub1.branches.gathered = True
+  
+  sub2.id = "Second Sub Issue"
+  sub2.text = "Second Sub Issue Long Version"
+  sub2.default = 'p'
+  sub2.join_type = 'conjunctive'
+  sub2.factors.gathered = True
+  sub2.branches.gathered = True
+  
+  sub1sub1.id = "First Sub First Sub Issue"
+  sub1sub1.text = "First Sub First Sub Issue Long Version"
+  sub1sub1.default = 'p'
+  sub1sub1.factors.gathered = True
+  sub1sub1.factors.append(factors[0])
+  sub1sub1.factors.append(factors[1])
+  sub1sub1.branches.gathered = True
+  
+  sub1sub2.id = "First sub second sub Issue"
+  sub1sub2.text = "First sub second sub Issue Long Version"
+  sub1sub2.default = 'p'
+  sub1sub2.factors.gathered = True
+  sub1sub2.factors.append(factors[1])
+  sub1sub2.factors.append(factors[2])
+  sub1sub2.branches.there_are_any = False
+  
+  sub2sub1.id = "Second sub first sub Issue"
+  sub2sub1.text = "second sub first sub Issue Long Version"
+  sub2sub1.default = 'p'
+  sub2sub1.factors.gathered = True
+  sub2sub1.factors.append(factors[0])
+  sub2sub1.factors.append(factors[1])
+  sub2sub1.branches.there_are_any = False
+  
+  sub2sub2.id = "second sub second sub Issue"
+  sub2sub2.text = "second sub second sub Issue Long Version"
+  sub2sub2.default = 'p'
+  sub2sub2.factors.gathered = True
+  sub2sub2.factors.append(factors[1])
+  sub2sub2.factors.append(factors[2])
+  sub2sub2.branches.there_are_any = False
+  
+  model.issues.branches.append(sub1,set_instance_name=True)
+  model.issues.branches.append(sub2,set_instance_name=True)
+  model.issues.branches[0].branches.append(sub1sub1,set_instance_name=True)
+  model.issues.branches[0].branches.append(sub1sub2,set_instance_name=True)
+  model.issues.branches[1].branches.append(sub2sub1,set_instance_name=True)
+  model.issues.branches[1].branches.append(sub2sub2,set_instance_name=True)
+  
+  testing_issue_review = True
+---
+code: |
+  if use_existing:
+    upload
+    #import_yaml_to_DA(upload.path(), factors, cases, model)
+  use_existing_or_new = True
+---
+question: Existing or New Reasoner?
+subquestion: |
+  Do you want to generate a new reasoner from scratch, or edit an existing reasoner?
+field: use_existing
+buttons:
+  - "Edit Existing Reasoner": True
+  - "Build New Reasoner": False
+---
+question: Upload Your Reasoner File
+subquestion: |
+  Please note that this upload feature is expecting a YAML file that was generated
+  using using this tool.  It will not work with other formats.
+fields:
+  - Your Reasoner: upload
+    datatype: file
 ---
 generic object: DAIBPIssue
 code: |
@@ -103,7 +238,7 @@ mandatory: True
 question: |
   Download Your OpenLCBR Database
 subquestion: |
-  Congratulations, your openlcbr database has been generated, and can be downloaded
+  Your openlcbr database has been generated, and can be downloaded
   below.  To use this database, upload it to the "sources" section of your
   docassemble playground, and provide it to the docassemble-openlcbr software as
   described in the documentation.
@@ -132,15 +267,18 @@ subquestion: |
   If you become aware of problems with it, please report an issue at
   [the GitHub page for docassemble-openlcbr].
   
-  ###Known Issues
-  * The final output file does not correctly format factor sets associated with
-    cases and issues.
-  * There is no input validation, so it is very easy to create a database that will
-    not work.
-  
+  ###Issues
+  * Adding subnodes does not work for nodes that don't already have any.
+  * The review of issues add subnode functionality doesn't ask for factors of the added nodes.
+  * It doesn't recalculate type or figure out whether to ask for factors or join types.
+  * The edit function doesn't ask for factors.
+
   ###Planned Work
+  * Implement review of issues tree.
+  * Test the output for compatibility with docassemble-openlcbr.
   * Make it possible for an administrator to use this interview to edit an existing
     database in the docassemble playground.
+  * Add some types of input validation.
   * Make it possible for a docassemble administrator to save an edited database
     directly to the docassemble playground.
   * Make it possible to review the issues model before completing the interview.
@@ -337,6 +475,34 @@ subquestion: |
   ${ cases.add_action() }
 section: Cases
 field: cases_reviewed
+---
+question: Review Your Issues
+subquestion: |
+  ${ model.issues.display_review_tree() }
+section: Issues
+field: issues_reviewed
+---
+event: delete_node
+code: |
+  node = action_argument('node')
+  m = re.search(r'^(.*)\[([0-9]+)\]$',node)
+  list = m.group(1)
+  index = int(m.group(2))
+  del m
+  target = value(list)
+  target.pop(index)
+---
+event: add_subnode
+code: |
+  node = action_argument('node')
+  target = value(node)
+  target.branches.reset_gathered()
+---
+event: edit_node
+code: |
+  node = action_argument('node')
+  target = value(node)
+  force_ask(target.instanceName + ".id")
 ---
 field: factors_intro
 question: Factors
