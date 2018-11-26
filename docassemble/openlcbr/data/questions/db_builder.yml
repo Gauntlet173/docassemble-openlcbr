@@ -69,6 +69,7 @@ code: |
   # Working on replacing this
   # issues_reviewed
   model.issues.review_screen
+  model.issues.branches[0].review_screen
   ko_factors_reviewed
   
   database.initialize(filename="da-openlcbr.yml")
@@ -387,64 +388,101 @@ field: issues_reviewed
 generic object: DAIBPIssue
 question: Review Issue ${ x.id }
 subquestion: |
-  First, there should be a link to navigate up to this issue's parent issue.
-  
-  We start by displaying the current objects id:
-  
-  ${ x.instanceName }
-  
-  Then figure out if the instance name is the root instance.
-  
-  % if x.instanceName == "model.issues":
-    Yep, this is the root instance.
-  % else:
-    Nope, this is not the root instance.
-    
-    Then, we figure out the instance name for this instance's parent.
-    
-    ${ x.parent }
-    
-    And then we make a link that allows you to review the parent.
+  % if x.type <> "top":
+  ${ action_button_html(url_ask(x.parent.instanceName + '.review_screen'), label="Go to Parent") }
   % endif
   
-  Then display the information about the issue
-  
-  ID: ${ x.id }
-  
-  Name: ${ x.text }
-  
-  Winner-if-Unraised: ${ x.default }
-  
-  Then there should be an ability to go to the edit screen to change these things.
-  
+  Field | Value | Action
+  ---|---|---
+  ID | ${ x.id } | ${ action_button_html(url_ask(x.instanceName + ".id")) }
+  Name | ${ x.text } | ${ action_button_html(url_ask(x.instanceName + ".text")) }
+  Winner-if-Unraised | ${ x.default } | ${ action_button_html(url_ask(x.instanceName + ".default")) }
   % if x.type <> "leaf":
-  Join Type: ${ x.join_type }
+  Join Type | ${ x.join_type } | ${ action_button_html(url_ask(x.instanceName + ".join_type")) }
   % endif
   
-  % if x.type <> "leaf":
-  Then display the information about subnodes if it exists. This should be in a table
-  which allows you to delete, or to add a subnode, or to edit a subnode.
+  ${ action_button_html(url_action("delete_leaf_node",node=x.instanceName),icon="trash",label="Delete This Node",color='danger') }
   
-  This is where the subnode review table would go.
+  % if x.type <> "leaf":
+  ####Sub-Issues
+  
+  Sub-Issue  |  Actions
+  ---|---
+  % for b in x.branches:
+  ${b.id} | ${ action_button_html(url_ask(b.instanceName + ".review_screen")) }
+  % endfor
   % endif
   
   % if x.type == "leaf":
-  Then display the information about factors if it exists.
-  
+  ###Factors
   ${ x.factors }
-  
-  Then an ability to go to the factors page and change the factors.
+  ${ action_button_html(url_ask(x.instanceName + ".factors"),label="Edit Factors") }
   % endif
+  
+  ${ action_button_html(url_action("add_subnode",node=x.instanceName),icon="plus",label="Add Sub-Issue") }
+  
 field: x.review_screen
 section: Issues
 ---
 generic object: DAIBPIssue
+sets: x.branches[y].review_screen
+question: Review Issue ${ x.branches[y].id }
+subquestion: |
+  % if x.type <> "top":
+  ${ action_button_html(url_ask(x.parent.instanceName + '.review_screen'), label="Go to Parent") }
+  % endif
+  
+  Field | Value | Action
+  ---|---|---
+  ID | ${ x.id } | ${ action_button_html(url_ask(x.instanceName + ".id")) }
+  Name | ${ x.text } | ${ action_button_html(url_ask(x.instanceName + ".text")) }
+  Winner-if-Unraised | ${ x.default } | ${ action_button_html(url_ask(x.instanceName + ".default")) }
+  % if x.type <> "leaf":
+  Join Type | ${ x.join_type } | ${ action_button_html(url_ask(x.instanceName + ".join_type")) }
+  % endif
+  
+  ${ action_button_html(url_action("delete_leaf_node",node=x.instanceName),icon="trash",label="Delete This Node",color='danger') }
+  
+  % if x.type <> "leaf":
+  ####Sub-Issues
+  
+  Sub-Issue  |  Actions
+  ---|---
+  % for b in x.branches:
+  ${b.id} | ${ action_button_html(url_ask(b.instanceName + ".review_screen")) }
+  % endfor
+  % endif
+  
+  % if x.type == "leaf":
+  ###Factors
+  ${ x.factors }
+  ${ action_button_html(url_ask(x.instanceName + ".factors"),label="Edit Factors") }
+  % endif
+  
+  ${ action_button_html(url_action("add_subnode",node=x.instanceName),icon="plus",label="Add Sub-Issue") }
+  
+field: x.branches[y].review_screen
+section: Issues
+---
+event: review_issue
+code: |
+  #log("test", "info")
+  #force_ask(model.issues.review_screen)
+  #node = action_argument('node')
+  #log("Received Node: " + str(node), "info")
+  #force_ask(value(node + ".review_screen")
+---
+generic object: DAIBPIssue
 code: |
   log("Instance Name: " + x.instanceName, "info")
-  m = re.search(r'^(.*)\.branches\[[0-9]+\]$',x.instanceName)
-  log("Search Result: " + str(m), "info")
-  x.parent = value(m.group(1))
-  del m
+  if x.instanceName == model.issues:
+    x.parent = model.issues
+  else:
+    m = re.search(r'^(.*)\.branches\[[0-9]+\]$',x.instanceName)
+    log("Search Result: " + str(m), "info")
+    x.parent = model.issues
+    #x.parent = value(m.group(1))
+    del m
 ---
 event: delete_node
 code: |

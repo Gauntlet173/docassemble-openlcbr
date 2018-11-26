@@ -203,6 +203,8 @@ def import_yaml_to_DA(database, factors, cases, model):
   issues = data['domain_models']['docassemble_openlcbr_output']['issues']
   for i in issues:
     new_issue = DAIBPIssue()
+    new_issue.factors = DAList()
+    new_issue.branches = DAList()
     new_issue.id = issues[i]['id']
     new_issue.text = issues[i]['proposition']
     new_issue.type = issues[i]['type']
