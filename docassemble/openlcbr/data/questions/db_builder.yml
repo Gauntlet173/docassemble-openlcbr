@@ -22,12 +22,6 @@ metadata:
   comments: |
     This is an interview designed to allow you to do the data entry to generate an IBP
     model and database for use with docassemble-openlcbr.
-    
-    To Do:
-    Implement review for issues.
-    Input Validation
-      - Require specifying at least two antecedent issues.
-    Edit Existing File.
 ---
 objects:
   - factors: DAList.using(object_type=DAObject)
@@ -50,9 +44,6 @@ code: |
   model.issues.branches.complete_attribute = "complete"
   factors.complete_attribute = "complete"
   cases.complete_attribute = "complete"
-  
-  # If the line below is uncommented it does a bunch of things to simplify testing.
-  #testing_issue_review
 
   intro
   use_existing_or_new
@@ -75,7 +66,10 @@ code: |
     # are issues to collect.
     if model.issues.build:
       model.issues.complete
-  issues_reviewed
+  # Working on replacing this
+  # issues_reviewed
+  model.issues.review_screen
+  ko_factors_reviewed
   
   database.initialize(filename="da-openlcbr.yml")
   yaml_output = data.output_yaml(factors, cases, model)
@@ -83,111 +77,9 @@ code: |
   summary
 ---
 code: |
-  #This block of code creates some issues, and answers some questions so that you
-  #can go straight to the issue review page with data already there.
-  use_existing_or_new = True
-  use_existing = False
-  factors.there_are_any = False
-  #factors_reviewed = True
-  cases.there_are_any = False
-  cases_reviewed = True
-  model.issues.build = True
-  model.issues.complete = True
-  model.ko_factors.there_are_any = False
-  
-  
-  
-  factor1 = DAObject()
-  factor2 = DAObject()
-  factor3 = DAObject()
-  factor1.id = "F1"
-  factor1.text = "first factor"
-  factor1.side = 'p'
-  factors.append(factor1)
-  factor2.id = "F2"
-  factor2.text = "second factor"
-  factor2.side = 'p'
-  factors.append(factor2)
-  factor3.id = "F3"
-  factor3.text = "third factor"
-  factor3.side = 'p'
-  factors.append(factor3)
-  
-  model.issues.id = "Root Issue"
-  model.issues.text = "Root Issue Long Version"
-  model.issues.default = 'p' 
-  model.issues.join_type = 'conjunctive'
-  model.issues.factors.gathered = True
-  model.issues.branches.gathered = True
-  
-  sub1 = DAIBPIssue()
-  sub2 = DAIBPIssue()
-  sub1sub1 = DAIBPIssue()
-  sub2sub1 = DAIBPIssue()
-  sub1sub2 = DAIBPIssue()
-  sub2sub2 = DAIBPIssue()
-  
-
-  
-  sub1.id = "First SubIssue"
-  sub1.text = "First Sub Issue Long Version"
-  sub1.default = 'p'
-  sub1.join_type = 'conjunctive'
-  sub1.factors.gathered = True
-  sub1.branches.gathered = True
-  
-  sub2.id = "Second Sub Issue"
-  sub2.text = "Second Sub Issue Long Version"
-  sub2.default = 'p'
-  sub2.join_type = 'conjunctive'
-  sub2.factors.gathered = True
-  sub2.branches.gathered = True
-  
-  sub1sub1.id = "First Sub First Sub Issue"
-  sub1sub1.text = "First Sub First Sub Issue Long Version"
-  sub1sub1.default = 'p'
-  sub1sub1.factors.gathered = True
-  sub1sub1.factors.append(factors[0])
-  sub1sub1.factors.append(factors[1])
-  sub1sub1.branches.gathered = True
-  
-  sub1sub2.id = "First sub second sub Issue"
-  sub1sub2.text = "First sub second sub Issue Long Version"
-  sub1sub2.default = 'p'
-  sub1sub2.factors.gathered = True
-  sub1sub2.factors.append(factors[1])
-  sub1sub2.factors.append(factors[2])
-  sub1sub2.branches.there_are_any = False
-  
-  sub2sub1.id = "Second sub first sub Issue"
-  sub2sub1.text = "second sub first sub Issue Long Version"
-  sub2sub1.default = 'p'
-  sub2sub1.factors.gathered = True
-  sub2sub1.factors.append(factors[0])
-  sub2sub1.factors.append(factors[1])
-  sub2sub1.branches.there_are_any = False
-  
-  sub2sub2.id = "second sub second sub Issue"
-  sub2sub2.text = "second sub second sub Issue Long Version"
-  sub2sub2.default = 'p'
-  sub2sub2.factors.gathered = True
-  sub2sub2.factors.append(factors[1])
-  sub2sub2.factors.append(factors[2])
-  sub2sub2.branches.there_are_any = False
-  
-  model.issues.branches.append(sub1,set_instance_name=True)
-  model.issues.branches.append(sub2,set_instance_name=True)
-  model.issues.branches[0].branches.append(sub1sub1,set_instance_name=True)
-  model.issues.branches[0].branches.append(sub1sub2,set_instance_name=True)
-  model.issues.branches[1].branches.append(sub2sub1,set_instance_name=True)
-  model.issues.branches[1].branches.append(sub2sub2,set_instance_name=True)
-  
-  testing_issue_review = True
----
-code: |
   if use_existing:
     upload
-    #import_yaml_to_DA(upload.path(), factors, cases, model)
+    import_yaml_to_DA(upload[0].path(), factors, cases, model)
   use_existing_or_new = True
 ---
 question: Existing or New Reasoner?
@@ -272,16 +164,16 @@ subquestion: |
   * The review of issues add subnode functionality doesn't ask for factors of the added nodes.
   * It doesn't recalculate type or figure out whether to ask for factors or join types.
   * The edit function doesn't ask for factors.
-
+  * There is no review for knock-out factors in the model.
+  * The editor may not deal properly with reasoner files that do not include
+    issues.
+  
   ###Planned Work
   * Implement review of issues tree.
   * Test the output for compatibility with docassemble-openlcbr.
-  * Make it possible for an administrator to use this interview to edit an existing
-    database in the docassemble playground.
   * Add some types of input validation.
   * Make it possible for a docassemble administrator to save an edited database
     directly to the docassemble playground.
-  * Make it possible to review the issues model before completing the interview.
   
   [the GitHub page for docassemble-openlcbr]: https://github.com/Gauntlet173/docassemble-openlcbr
 field: intro
@@ -476,14 +368,87 @@ subquestion: |
 section: Cases
 field: cases_reviewed
 ---
+question: Review Your Knockout Features
+subquestion: |
+  The knock-out factors specified for your model are:
+  
+  ${ model.ko_factors }
+  
+  Click here to change this list.
+section: Issues
+field: ko_factors_reviewed
+---
 question: Review Your Issues
 subquestion: |
   ${ model.issues.display_review_tree() }
 section: Issues
 field: issues_reviewed
 ---
+generic object: DAIBPIssue
+question: Review Issue ${ x.id }
+subquestion: |
+  First, there should be a link to navigate up to this issue's parent issue.
+  
+  We start by displaying the current objects id:
+  
+  ${ x.instanceName }
+  
+  Then figure out if the instance name is the root instance.
+  
+  % if x.instanceName == "model.issues":
+    Yep, this is the root instance.
+  % else:
+    Nope, this is not the root instance.
+    
+    Then, we figure out the instance name for this instance's parent.
+    
+    ${ x.parent }
+    
+    And then we make a link that allows you to review the parent.
+  % endif
+  
+  Then display the information about the issue
+  
+  ID: ${ x.id }
+  
+  Name: ${ x.text }
+  
+  Winner-if-Unraised: ${ x.default }
+  
+  Then there should be an ability to go to the edit screen to change these things.
+  
+  % if x.type <> "leaf":
+  Join Type: ${ x.join_type }
+  % endif
+  
+  % if x.type <> "leaf":
+  Then display the information about subnodes if it exists. This should be in a table
+  which allows you to delete, or to add a subnode, or to edit a subnode.
+  
+  This is where the subnode review table would go.
+  % endif
+  
+  % if x.type == "leaf":
+  Then display the information about factors if it exists.
+  
+  ${ x.factors }
+  
+  Then an ability to go to the factors page and change the factors.
+  % endif
+field: x.review_screen
+section: Issues
+---
+generic object: DAIBPIssue
+code: |
+  log("Instance Name: " + x.instanceName, "info")
+  m = re.search(r'^(.*)\.branches\[[0-9]+\]$',x.instanceName)
+  log("Search Result: " + str(m), "info")
+  x.parent = value(m.group(1))
+  del m
+---
 event: delete_node
 code: |
+  # This is from the old one and should be deleted when it can be.
   node = action_argument('node')
   m = re.search(r'^(.*)\[([0-9]+)\]$',node)
   list = m.group(1)
@@ -494,12 +459,14 @@ code: |
 ---
 event: add_subnode
 code: |
+  # This is from the old one and should be deleted when it can be.
   node = action_argument('node')
   target = value(node)
   target.branches.reset_gathered()
 ---
 event: edit_node
 code: |
+  # This is from the old one and should be deleted when it can be.
   node = action_argument('node')
   target = value(node)
   force_ask(target.instanceName + ".id")

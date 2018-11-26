@@ -40,6 +40,14 @@ def word_to_side(word):
   else:
     return '?'
 
+def side_to_word(side):
+  if side == 'p':
+    return 'Plaintiff'
+  elif side == "d":
+    return "Defendant"
+  else:
+    return "?"
+
 
   
 class DAIBPData(DAObject):
@@ -115,9 +123,7 @@ class DAIBPData(DAObject):
     case['id'] = 'your-test-case'
     case['factors'] = set()
     for f in self.factors:
-      #log("Checking if " + f + " is true in test case", "info")
       if f in test_case.factors:
-        #log("True, adding.", "info")
         case['factors'].add(f)
     p = DATree()
     p = ibp_explain.predict_case(case,
@@ -161,51 +167,71 @@ def import_yaml_to_DA(database, factors, cases, model):
   # First, take the content of the yaml file and turn it into Python data.
   stream = open(database, 'r')
   data = yaml.load(stream)
+  
+  new_factors = {}
   # Load the Factors into the factors object
   for f in data['factors']:
-    new_factor = DAObject(f['id'])
-    new_factor.id = f['id']
-    new_factor.side = f['favored_side']
-    new_factor.long_desc = f['description']
-    new_factor.name = f['proposition']
+    new_factor = DAObject(f)
+    new_factor.id = f
+    new_factor.side = side_to_word(data['factors'][f]['favored_side'])
+    new_factor.long_desc = data['factors'][f]['description']
+    new_factor.name = data['factors'][f]['proposition']
     factors.append(new_factor)
+    new_factors[f] = new_factor
   factors.gathered = True
+  factors.auto_gather = False
 
   # Load the Cases into the Cases Object
   for c in data['case_collections']['docassemble_openlcbr_output']['cases']:
     new_case = DAIBPCase(c['id'])
     new_case.id = c['id']
+    new_case.name = new_case.id # This seems to be necessary for review screens.
     new_case.year = c['year']
     new_case.cite = c['citation']
-    new_case.winner = c['winner']
+    new_case.winner = side_to_word(c['winner'])
     for f in c['factors']:
-      new_case.factors.append(f['id'])
+      new_case.factors.append(new_factors[f])
     new_case.factors.gathered = True
+    new_case.factors.auto_gather = False
     cases.append(new_case)
   cases.gathered = True
+  cases.auto_gather = False
 
   # Load the model into the model Object
   new_issues = {} # So that we can come back to it and use it to add branches.
   top_issue = None # To keep track of which issue is the root issue.
-  for i in data['domain_models']['docassemble_openlcbr_output']['issues']:
-    new_issue = DAIBPIssue(i['id'])
-    new_issue.id = i['id']
-    new_issue.text = i['proposition']
-    new_issue.type = i['type']
+  issues = data['domain_models']['docassemble_openlcbr_output']['issues']
+  for i in issues:
+    new_issue = DAIBPIssue()
+    new_issue.id = issues[i]['id']
+    new_issue.text = issues[i]['proposition']
+    new_issue.type = issues[i]['type']
     if new_issue.type == "top":
       top_issue = new_issue
-    new_issue.default = i['winner_if_unraised']
-    if len(i['antecedents']) > 0:
-      if i['disjoint_antecedents'] == True:
+    new_issue.default = issues[i]['winner_if_unraised']
+    if 'antecedents' in issues[i]:
+      if 'disjoint_antecedents' in issues[i]:
         new_issue.join_type = "disjoint"
       else:
         new_issue.join_type = "conjoint"
-    for f in i['factors']:
-      new_issue.factors.append(f)
-    new_issues[i['id']] =  new_issue
-  for i in data['domain_models']['docassemble_openlcbr_output']['issues']:
-    if len(i['antecedents']) > 0:
-      for a in i['antecedents']:
-        i.branches.append(new_issues[a])
+    if 'factors' in issues[i]:
+      for f in issues[i]['factors']:
+        new_issue.factors.append(new_factors[f])
+    new_issue.factors.gathered = True
+    new_issue.factors.auto_gather = False
+    new_issue.complete = True
+    new_issue.branches.gathered = True
+    new_issue.branches.auto_gather = False
+    new_issues[i] = new_issue
+  for i in issues:
+    if 'antecedents' in issues[i]:
+      for a in issues[i]['antecedents']:
+        new_issues[i].branches.append(new_issues[a])
+  model.ko_factors = DAList('model.ko_factors')
+  for kof in data['domain_models']['docassemble_openlcbr_output']['ko_factors']:
+    model.ko_factors.append(new_factors[kof])
+  model.ko_factors.gathered = True
+  model.ko_factors.auto_gather = False
   model.issues = top_issue
+  model.issues.build = True
     
