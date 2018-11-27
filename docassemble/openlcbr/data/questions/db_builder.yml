@@ -161,16 +161,15 @@ subquestion: |
   [the GitHub page for docassemble-openlcbr].
   
   ###Issues
-  * Adding subnodes does not work for nodes that don't already have any.
-  * The review of issues add subnode functionality doesn't ask for factors of the added nodes.
-  * It doesn't recalculate type or figure out whether to ask for factors or join types.
-  * The edit function doesn't ask for factors.
-  * There is no review for knock-out factors in the model.
-  * The editor may not deal properly with reasoner files that do not include
-    issues.
+  * Edit Factors in a Leaf Issue in Review Is NOt Working
+  * Add sub-node in issue review is not working.
+  * When you add a sub-node to a leaf node, the parent node should have its factors
+    removed.
+  * issue Types need to be recalculated automatically after changes.
   
   ###Planned Work
-  * Implement review of issues tree.
+  * The editor may not deal properly with reasoner files that do not include
+    issues.
   * Test the output for compatibility with docassemble-openlcbr.
   * Add some types of input validation.
   * Make it possible for a docassemble administrator to save an edited database
@@ -401,7 +400,9 @@ subquestion: |
   Join Type | ${ x.join_type } | ${ action_button_html(url_ask(x.instanceName + ".join_type")) }
   % endif
   
+  % if x.type == "leaf":
   ${ action_button_html(url_action("delete_leaf_node",node=x.instanceName),icon="trash",label="Delete This Node",color='danger') }
+  % endif
   
   % if x.type <> "leaf":
   ####Sub-Issues
@@ -415,99 +416,38 @@ subquestion: |
   
   % if x.type == "leaf":
   ###Factors
-  ${ x.factors }
+  The factors which are listed as relevant to this issue are:
+  
+  % for f in x.factors:
+  * ${f.name}
+  % endfor
+  
   ${ action_button_html(url_ask(x.instanceName + ".factors"),label="Edit Factors") }
   % endif
   
-  ${ action_button_html(url_action("add_subnode",node=x.instanceName),icon="plus",label="Add Sub-Issue") }
+  ${ x.branches.add_action(message="Add a sub-issue to this issue") }
   
 field: x.review_screen
 section: Issues
 ---
 generic object: DAIBPIssue
-sets: x.branches[y].review_screen
-question: Review Issue ${ x.branches[y].id }
-subquestion: |
-  % if x.type <> "top":
-  ${ action_button_html(url_ask(x.parent.instanceName + '.review_screen'), label="Go to Parent") }
-  % endif
-  
-  Field | Value | Action
-  ---|---|---
-  ID | ${ x.id } | ${ action_button_html(url_ask(x.instanceName + ".id")) }
-  Name | ${ x.text } | ${ action_button_html(url_ask(x.instanceName + ".text")) }
-  Winner-if-Unraised | ${ x.default } | ${ action_button_html(url_ask(x.instanceName + ".default")) }
-  % if x.type <> "leaf":
-  Join Type | ${ x.join_type } | ${ action_button_html(url_ask(x.instanceName + ".join_type")) }
-  % endif
-  
-  ${ action_button_html(url_action("delete_leaf_node",node=x.instanceName),icon="trash",label="Delete This Node",color='danger') }
-  
-  % if x.type <> "leaf":
-  ####Sub-Issues
-  
-  Sub-Issue  |  Actions
-  ---|---
-  % for b in x.branches:
-  ${b.id} | ${ action_button_html(url_ask(b.instanceName + ".review_screen")) }
-  % endfor
-  % endif
-  
-  % if x.type == "leaf":
-  ###Factors
-  ${ x.factors }
-  ${ action_button_html(url_ask(x.instanceName + ".factors"),label="Edit Factors") }
-  % endif
-  
-  ${ action_button_html(url_action("add_subnode",node=x.instanceName),icon="plus",label="Add Sub-Issue") }
-  
-field: x.branches[y].review_screen
-section: Issues
----
-event: review_issue
 code: |
-  #log("test", "info")
-  #force_ask(model.issues.review_screen)
-  #node = action_argument('node')
-  #log("Received Node: " + str(node), "info")
-  #force_ask(value(node + ".review_screen")
+  m = re.search(r'^(.*)\.branches\[[0-9]+\]$',x.instanceName)
+  x.parent = value(m.group(1))
+  del m
 ---
-generic object: DAIBPIssue
+event: delete_leaf_node
 code: |
-  log("Instance Name: " + x.instanceName, "info")
-  if x.instanceName == model.issues:
-    x.parent = model.issues
-  else:
-    m = re.search(r'^(.*)\.branches\[[0-9]+\]$',x.instanceName)
-    log("Search Result: " + str(m), "info")
-    x.parent = model.issues
-    #x.parent = value(m.group(1))
-    del m
----
-event: delete_node
-code: |
-  # This is from the old one and should be deleted when it can be.
   node = action_argument('node')
   m = re.search(r'^(.*)\[([0-9]+)\]$',node)
   list = m.group(1)
   index = int(m.group(2))
   del m
+  object = value(list + '[' + str(index) + ']')
   target = value(list)
+  parent = object.parent
   target.pop(index)
----
-event: add_subnode
-code: |
-  # This is from the old one and should be deleted when it can be.
-  node = action_argument('node')
-  target = value(node)
-  target.branches.reset_gathered()
----
-event: edit_node
-code: |
-  # This is from the old one and should be deleted when it can be.
-  node = action_argument('node')
-  target = value(node)
-  force_ask(target.instanceName + ".id")
+  force_ask(parent.review_screen)
 ---
 field: factors_intro
 question: Factors

@@ -171,7 +171,7 @@ def import_yaml_to_DA(database, factors, cases, model):
   new_factors = {}
   # Load the Factors into the factors object
   for f in data['factors']:
-    new_factor = DAObject(f)
+    new_factor = DAObject()
     new_factor.id = f
     new_factor.side = side_to_word(data['factors'][f]['favored_side'])
     new_factor.long_desc = data['factors'][f]['description']
@@ -213,9 +213,9 @@ def import_yaml_to_DA(database, factors, cases, model):
     new_issue.default = issues[i]['winner_if_unraised']
     if 'antecedents' in issues[i]:
       if 'disjoint_antecedents' in issues[i]:
-        new_issue.join_type = "disjoint"
+        new_issue.join_type = "disjunctive"
       else:
-        new_issue.join_type = "conjoint"
+        new_issue.join_type = "conjunctive"
     if 'factors' in issues[i]:
       for f in issues[i]['factors']:
         new_issue.factors.append(new_factors[f])
@@ -236,4 +236,5 @@ def import_yaml_to_DA(database, factors, cases, model):
   model.ko_factors.auto_gather = False
   model.issues = top_issue
   model.issues.build = True
+  model.issues._set_instance_name_recursively('model.issues')
     
