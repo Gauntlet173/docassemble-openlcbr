@@ -148,7 +148,7 @@ class DAIBPData(DAObject):
       newcase['winner'] = word_to_side(str(case.winner))
     newcase['factors'] = []
     for f in case.factors:
-      newcase['factors'].append(str(case.factors[f]))
+      newcase['factors'].append(f)
     default_cases.append(newcase)
   
 class DAIBPCase(DAObject):
