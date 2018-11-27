@@ -12,9 +12,18 @@ your own analogical reasoning tools for use with docassemble-openlcbr.
 [Click here for a live demo of what the user sees](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
 
 [Click here for a live demo of how to build a reasoner](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fdb_builder.yml)
-## Current Issues:
-* The images in the collapsing lists don't display as expected, this appears to be a
-  caching problem on machines that have a prior version of the javascript.
+## Clio Integration Demo
+As part of the sponsorship of the fellowship project, I have developed a version of the
+explain\_lcbr\_test.yml interview which uses information obtained from a live
+[Clio](http://www.clio.com) account, demonstrating the possibility of integrating
+docassemble-openlcbr with live data acquired over the Clio API.
+
+[Click here](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
+for a live demo of the integration between Clio and docassemble-openlcbr.
+
+The code for connecting to Clio is not included in docassemble-openlcbr, but may be
+released later under a different package.
+
 ## Progress:
 * Matthias Grabmair backported openlcbr to Python 2.7 to make it easier to use with docassemble's module system.
 * Got openlcbr running inside the package.
@@ -28,11 +37,8 @@ your own analogical reasoning tools for use with docassemble-openlcbr.
 * Updated interview and lcbr to run the reasoner against a case specified by the user.
 * Added an interview capable of building an openlcbr database from scratch.
 * Added the ability to automatically generate a test-case query screen from the data source.
+* Added the ability to edit a previously-generated openlcbr database.
 ## Work Plan
-* Generate a new demonstration analogical reasoning database in a family law issue.
+* New demonstration analogical reasoning database in a family law issue.
 * Integrate the analogical reasoning tool with a wider-purpose demonstration interview.
-* Allow convenient editing of existing openlcbr analogical reasoning databases on the server.
-* Make the codebase less brittle.
 * Create documentation and tutorials explaining how to use the system.
-* Integrate with Clio to use matters in a firm's database as a datasource for a
-  predictive model.
