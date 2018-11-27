@@ -58,7 +58,7 @@ class DAIBPData(DAObject):
     data_files = []
     data_files.append(database.path())
     self.factors, self.case_collections, self.domain_models = load_dataset(data_files)
-    self.factorslist = DADict('factors')
+    self.initializeAttribute('factorslist', DADict)
     for f in self.factors:
       id = self.factors[f]['id']
       description = self.factors[f]['description']
