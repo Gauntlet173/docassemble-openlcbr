@@ -18,7 +18,7 @@ explain\_lcbr\_test.yml interview which uses information obtained from a live
 [Clio](http://www.clio.com) account, demonstrating the possibility of integrating
 docassemble-openlcbr with live data acquired over the Clio API.
 
-[Click here](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
+[Click here](https://testda.roundtablelaw.ca/interview?i=docassemble.clio%3Adata%2Fquestions%2Fclio_openlcbr_demo.yml)
 for a live demo of the integration between Clio and docassemble-openlcbr.
 
 The code for connecting to Clio is not included in docassemble-openlcbr, but may be

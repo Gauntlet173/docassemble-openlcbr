@@ -5,7 +5,7 @@ features:
 modules:
   - docassemble.openlcbr.lcbr_explain
   - docassemble.openlcbr.ibp_explain
-  - .ibp_data
+  - docassemble.openlcbr.ibp_data
   - docassemble.base.util
   - docassemble.openlcbr.DATree
   - .DAClio
