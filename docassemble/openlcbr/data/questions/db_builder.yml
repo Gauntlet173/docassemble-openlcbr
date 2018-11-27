@@ -66,10 +66,7 @@ code: |
     # are issues to collect.
     if model.issues.build:
       model.issues.complete
-  # Working on replacing this
-  # issues_reviewed
   model.issues.review_screen
-  model.issues.branches[0].review_screen
   ko_factors_reviewed
   
   database.initialize(filename="da-openlcbr.yml")
@@ -110,8 +107,12 @@ code: |
   if x.branches.there_are_any:
     x.type = "int"
     x.join_type
+    if len(x.factors) > 0:
+      x.factors.clear()
   else:
     x.type = "leaf"
+    if x.attr('join_type') <> "":
+      x.join_type = ""
     x.factors.gather()
   x.complete = True
 ---
@@ -161,11 +162,10 @@ subquestion: |
   [the GitHub page for docassemble-openlcbr].
   
   ###Issues
-  * Edit Factors in a Leaf Issue in Review Is NOt Working
-  * Add sub-node in issue review is not working.
-  * When you add a sub-node to a leaf node, the parent node should have its factors
-    removed.
-  * issue Types need to be recalculated automatically after changes.
+  * Right now in issue review you have to hit "continue" once for each issue you have viewed.
+  * Right now if you add a sub-node to a leaf node, the leaf node does not correctly
+    become an intermediate node, lose factors, and gain a join_type.
+  * I believe deleting leaf nodes is working, but it should be checked.
   
   ###Planned Work
   * The editor may not deal properly with reasoner files that do not include
@@ -372,9 +372,11 @@ question: Review Your Knockout Features
 subquestion: |
   The knock-out factors specified for your model are:
   
-  ${ model.ko_factors }
+  % for kof in model.ko_factors:
+  * ${ kof }
+  % endfor
   
-  Click here to change this list.
+  ${ action_button_html(url_ask('model.ko_factors'),label="Edit Knock-Out Factors") }
 section: Issues
 field: ko_factors_reviewed
 ---
@@ -387,6 +389,11 @@ field: issues_reviewed
 generic object: DAIBPIssue
 question: Review Issue ${ x.id }
 subquestion: |
+  % for b in x.branches:
+  % if b.complete:
+  % endif
+  % endfor
+
   % if x.type <> "top":
   ${ action_button_html(url_ask(x.parent.instanceName + '.review_screen'), label="Go to Parent") }
   % endif
@@ -405,12 +412,13 @@ subquestion: |
   % endif
   
   % if x.type <> "leaf":
+  
   ####Sub-Issues
   
   Sub-Issue  |  Actions
   ---|---
   % for b in x.branches:
-  ${b.id} | ${ action_button_html(url_ask(b.instanceName + ".review_screen")) }
+  ${b.id} |  ${ action_button_html(url_ask(b.instanceName + ".review_screen")) }
   % endfor
   % endif
   
@@ -425,7 +433,11 @@ subquestion: |
   ${ action_button_html(url_ask(x.instanceName + ".factors"),label="Edit Factors") }
   % endif
   
-  ${ x.branches.add_action(message="Add a sub-issue to this issue") }
+  ${ action_button_html(url_action('add_issue_subnode',node=x.instanceName),label="Add a sub-issue to this issue",icon="plus-circle") }
+  
+  ${ x.branches }
+  
+  Type: ${ x.type }
   
 field: x.review_screen
 section: Issues
@@ -435,6 +447,21 @@ code: |
   m = re.search(r'^(.*)\.branches\[[0-9]+\]$',x.instanceName)
   x.parent = value(m.group(1))
   del m
+---
+event: add_issue_subnode
+code: |
+  node = action_argument('node')
+  # Get the current node.
+  target = value(node)
+  if target.type <> "int":
+    target.type = "int"
+    target.join_type
+    if len(target.factors) > 0:
+      target.factors.clear()
+  # Add an object to the node
+  target.branches.appendObject(DAIBPIssue)
+  force_ask(target.branches.last().complete)
+  force_ask(target.review_screen)
 ---
 event: delete_leaf_node
 code: |
@@ -447,6 +474,15 @@ code: |
   target = value(list)
   parent = object.parent
   target.pop(index)
+  
+  #Recalculate this node.
+  if len(target) == 0:
+    parent.type = "leaf"
+    if parent.attr('join_type') <> "":
+      parent.join_type = ""
+    parent.factors.reset_gathered()
+    parent.factors.there_is_another = True
+  
   force_ask(parent.review_screen)
 ---
 field: factors_intro

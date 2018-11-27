@@ -176,10 +176,10 @@ def import_yaml_to_DA(database, factors, cases, model):
     new_factor.side = side_to_word(data['factors'][f]['favored_side'])
     new_factor.long_desc = data['factors'][f]['description']
     new_factor.name = data['factors'][f]['proposition']
-    factors.append(new_factor)
+    factors.append(new_factor.copy_shallow('factors'))
     new_factors[f] = new_factor
   factors.gathered = True
-  factors.auto_gather = False
+  #factors.auto_gather = False 
 
   # Load the Cases into the Cases Object
   for c in data['case_collections']['docassemble_openlcbr_output']['cases']:
@@ -190,12 +190,12 @@ def import_yaml_to_DA(database, factors, cases, model):
     new_case.cite = c['citation']
     new_case.winner = side_to_word(c['winner'])
     for f in c['factors']:
-      new_case.factors.append(new_factors[f])
+      new_case.factors.append(new_factors[f].copy_shallow('factors'))
     new_case.factors.gathered = True
-    new_case.factors.auto_gather = False
+    #new_case.factors.auto_gather = False
     cases.append(new_case)
   cases.gathered = True
-  cases.auto_gather = False
+  #cases.auto_gather = False
 
   # Load the model into the model Object
   new_issues = {} # So that we can come back to it and use it to add branches.
@@ -218,12 +218,13 @@ def import_yaml_to_DA(database, factors, cases, model):
         new_issue.join_type = "conjunctive"
     if 'factors' in issues[i]:
       for f in issues[i]['factors']:
-        new_issue.factors.append(new_factors[f])
+        new_issue.factors.append(new_factors[f].copy_shallow('factors'))
     new_issue.factors.gathered = True
-    new_issue.factors.auto_gather = False
+    #new_issue.factors.auto_gather = False
     new_issue.complete = True
     new_issue.branches.gathered = True
-    new_issue.branches.auto_gather = False
+    new_issue.branches.object_type = DAIBPIssue
+    #new_issue.branches.auto_gather = False
     new_issues[i] = new_issue
   for i in issues:
     if 'antecedents' in issues[i]:
@@ -231,9 +232,9 @@ def import_yaml_to_DA(database, factors, cases, model):
         new_issues[i].branches.append(new_issues[a])
   model.ko_factors = DAList('model.ko_factors')
   for kof in data['domain_models']['docassemble_openlcbr_output']['ko_factors']:
-    model.ko_factors.append(new_factors[kof])
+    model.ko_factors.append(new_factors[kof].copy_shallow('factors'))
   model.ko_factors.gathered = True
-  model.ko_factors.auto_gather = False
+  #model.ko_factors.auto_gather = False
   model.issues = top_issue
   model.issues.build = True
   model.issues._set_instance_name_recursively('model.issues')
