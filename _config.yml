@@ -1,14 +1,12 @@
 # Site settings
-title: "Docassemble"
-email: "jhpyle@gmail.com"
+title: "docassemble-openlcbr"
+email: "jason@roundtablelaw.ca"
 description: >-
-  A free, open-source expert system for guided interviews and document assembly, based on Python, YAML, and Markdown.
+  A package to extend open-source expert system tool docassemble to be able to use analogical case based reasoning from openlcbr.
 baseurl: ""
-url: "https://docassemble.org"
-demourl: "https://demo.docassemble.org"
-#demourl: "http://localhost"
-repository: jhpyle/docassemble
-github_username: jhpyle
+url: "https://Gauntlet173.github.io/docassemble-openlcbr"
+repository: Gauntlet173/docassemble-openlcbr
+github_username: Gauntlet173
 collections:
   docs:
     output: true
