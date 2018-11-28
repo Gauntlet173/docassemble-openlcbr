@@ -1,0 +1,57 @@
+    <footer style="text-align:center;padding-bottom:20px">
+{% include footer-attribution.html %}
+      <p>
+      {%- for thepage in site.pages %}
+      {%- if thepage.url contains '/search.html' or thepage.url == '/' or thepage.url contains '/index.html'%}
+	{%- continue %}
+      {%- endif %}
+      {%- if thepage.short_title %}
+      <a href="{{ thepage.url | prepend: site.baseurl }}">{{ thepage.short_title }}</a>
+      &middot;
+      {%- elsif thepage.title %}
+      <a href="{{ thepage.url | prepend: site.baseurl }}">{{ thepage.title }}</a>
+      &middot;
+      {%- endif %}
+      {%- endfor %}
+      <a href="{{ site.github.repository_url }}">GitHub</a>
+      </p>
+      <p><a href="https://twitter.com/docassemble" class="twitter-follow-button" data-show-count="false">Follow @docassemble</a></p>
+    </footer>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    <script src="{{ '/jquery/jquery.min.js' | prepend: site.baseurl }}"></script>
+    <script src="{{ '/bootstrap4/js/bootstrap.min.js' | prepend: site.baseurl }}"></script>
+    <script src="{{ '/tocmd-generator/js/jquery.toc.js' | prepend: site.baseurl }}"></script>
+    <script>
+      $('#main').toc({showAlways:true});
+      $("h1, h2, h3, h4, h5").each(function(){
+        if ($(this).children().length > 0){
+          var firstElement = $(this).children()[0];
+          //console.log($(firstElement).attr('name'));
+          if ($(firstElement).prop('tagName') == 'A' && $(firstElement).attr('name') != null){
+            var bookmark = $("<a>", {"class": "bookmark"});
+            bookmark.attr('href', '#' + $(firstElement).prop('name'));
+            bookmark.html('&para;');
+            $(this).append(bookmark);
+            //console.log('got: ' + $(firstElement).prop('name'));
+          }
+        }
+      });
+      function goToAnchor() { 
+        hash = document.location.hash;
+        if (hash !="") {
+          setTimeout(function() {
+            if (location.hash) {
+              window.scrollTo(0, 0);
+              window.location.href = hash;
+            }
+          }, 1);
+        }
+        else {
+          return false;
+        }
+      }
+      $(document).ready(function(){
+        $('blockquote').addClass('blockquote');
+        goToAnchor();
+      });
+    </script>

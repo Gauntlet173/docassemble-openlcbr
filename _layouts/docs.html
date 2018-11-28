@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+{%- include head.html %}
+  <body>
+{%- include header.html %}
+    <div class="container">
+      <div class="row mt-lg-4">
+	<nav class="col-lg-3">
+	  <div class="sidebar-nav">
+            <div class="navbar navbar-expand-lg navbar-light flex-row flex-lg-column align-items-start">
+              <div class="navbar-header">
+                <a href="{{ site.baseurl }}/docs.html" class="navbar-brand">Documentation</a>
+              </div>
+              <button type="button" class="navbar-toggler" data-toggle="collapse" data-target=".sidebar-navbar-collapse">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse sidebar-navbar-collapse">
+                <ul class="flex-column navbar-nav w-100 justify-content-between">
+{%- for section in site.data.docs %}
+                  <li class="nav-item"><strong>{{ section.title }}</strong></li>
+{%- include docs_section.html items=section.docs %}
+{%- endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+	</nav>
+	<div class="col-lg-9">
+	  <header>
+            <a style="float: right" target="_blank" href="{{site.github.repository_url}}/blob/gh-pages/{{page.path}}">Edit this page on GitHub <i class="fab fa-github-alt"></i></a>
+	    <h1 class="page-header">{{ page.title }}</h1>
+	  </header>
+	  <main id="main">
+	  {{ content }}
+	  </main>
+{%- include section_nav.html %}
+	</div>
+      </div>
+    </div>
+    <hr>
+{%- include footer.html %}
+{%- include google-analytics.html %}
+  </body>
+</html>

@@ -1,0 +1,53 @@
+- title: Tutorial
+  docs:
+    - helloworld
+- title: Authoring guide
+  docs:
+    - overview
+    - interviews
+    - initial
+    - questions
+    - fields
+    - modifiers
+    - code
+    - logic
+    - markup
+    - template
+    - documents
+    - objects
+    - groups
+    - functions
+    - legal
+    - special
+    - reserved
+- title: Special features
+  docs:
+    - language
+    - roles
+    - background
+    - ml
+    - sms
+    - api
+    - frontend
+- title: Users
+  docs:
+    - users
+    - livehelp
+- title: Development
+  docs:
+    - development
+    - playground
+    - packages
+    - errors
+    - support
+- title: Administration
+  docs:
+    - admin
+    - installation
+    - docker
+    - config
+    - scalability
+    - security
+    - changelog
+    - license
+    
