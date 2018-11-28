@@ -7,8 +7,6 @@ order: 20
 
 ### Table of Contents
 
-For a narrative version of the sections of the documentation, see the [Overview].
-
 <ul class="interiortoc">
 {% for section in site.data.docs %}
 <li>{{ section.title }}</li>
