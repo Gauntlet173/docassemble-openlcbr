@@ -1,6 +1,1 @@
----
-title: Document Center
----
-#Test.md
-
-This is a test file.
+This is the test file.
