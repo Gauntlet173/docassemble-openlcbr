@@ -1,8 +1,6 @@
-- index
-- title: Category one
+---
+---
+- title: Docs Pages
   docs:
     - building_reasoners
     - objects
-- title: Doc Category
-  docs:
-    - other_doc
