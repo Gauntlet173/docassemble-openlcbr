@@ -5,7 +5,7 @@ features:
 modules:
   - docassemble.openlcbr.lcbr_explain
   - docassemble.openlcbr.ibp_explain
-  - .ibp_data
+  - docassemble.openlcbr.ibp_data
   - docassemble.base.util
   - docassemble.openlcbr.DATree
   - .DAClio
@@ -33,7 +33,7 @@ code: |
   if not use_custom_data:
     for k,v in custom_fields.iteritems():
       if v:
-        test_case.factors[reasoner.get_factor_id_by_proposition(k)] = v
+        test_case.factors.append(reasoner.get_factor_id_by_proposition(k))
     test_case.factors.gathered = True
   else:
     # Deleting the test_case.factors attribute forces the interview to collect it again.
@@ -56,7 +56,7 @@ code: |
             new_case.winner = 'Defendant'
         else:
           if cfv['value'] == True:
-            new_case.factors[reasoner.get_factor_id_by_proposition(cfv['field_name'])] = reasoner.get_factor_id_by_proposition(cfv['field_name'])
+            new_case.factors.append(reasoner.get_factor_id_by_proposition(cfv['field_name']))
       new_case.factors.there_is_another = False
       reasoner.add_precedent_case(new_case)
   else:
@@ -182,4 +182,3 @@ code: |
   else:
     explanation = reasoner.predict(test_case,'trade_secret_test')
 ---
-

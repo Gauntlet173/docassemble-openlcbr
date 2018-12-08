@@ -22,6 +22,9 @@ metadata:
   comments: |
     This is an interview designed to allow you to do the data entry to generate an IBP
     model and database for use with docassemble-openlcbr.
+    
+    If you become aware of issues with this tool please raise them at:
+    https://github.com/Gauntlet173/docassemble-openlcbr
 ---
 objects:
   - factors: DAList.using(object_type=DAObject)
@@ -33,12 +36,18 @@ objects:
   - database: DAFile
   - upload: DAFile
 ---
+code: |
+  # When the review starts, it should start at the root of the issue tree.
+  issue_review_screen_target = model.issues
+  set_review_target = True
+---
 mandatory: True
 code: |
   # This is the main flow code block.
   
   # This sets the type of the root object so it won't be calculated.
   model.issues.type = "top"
+  
   
   # This forces the root of the issues tree to be collected completely.
   model.issues.branches.complete_attribute = "complete"
@@ -49,24 +58,23 @@ code: |
   use_existing_or_new
   
   if not use_existing:
-    factors_intro
     factors.gather()
   factors_reviewed
   
   if not use_existing:
-    cases_intro
     cases.gather()
   cases_reviewed
 
   if not use_existing:
-    model_intro
-    # The way we collect factors is all at once.
-    model.ko_factors.there_is_another = False
+    
     # Collecting this variable forces it to recursively collect the tree if there
     # are issues to collect.
     if model.issues.build:
       model.issues.complete
-  model.issues.review_screen
+    # The way we collect factors is all at once.
+    model.ko_factors.there_is_another = False
+  set_review_target
+  issue_review_finished
   ko_factors_reviewed
   
   database.initialize(filename="da-openlcbr.yml")
@@ -83,18 +91,23 @@ code: |
 question: Existing or New Reasoner?
 subquestion: |
   Do you want to generate a new reasoner from scratch, or edit an existing reasoner?
+  
+  If you choose to create a new reasoner, you will be taken step-by-step through
+  the process.
+  
+  If you wish to edit a reasoner built with this tool previously, you will need to
+  upload the .yml file.
 field: use_existing
 buttons:
+  - "New Reasoner": False
   - "Edit Existing Reasoner": True
-  - "Build New Reasoner": False
+section: Introduction
 ---
-question: Upload Your Reasoner File
-subquestion: |
-  Please note that this upload feature is expecting a YAML file that was generated
-  using using this tool.  It will not work with other formats.
+question: Upload Reasoner File
 fields:
   - Your Reasoner: upload
     datatype: file
+section: Introduction
 ---
 generic object: DAIBPIssue
 code: |
@@ -110,7 +123,8 @@ code: |
     if len(x.factors) > 0:
       x.factors.clear()
   else:
-    x.type = "leaf"
+    if x.instanceName <> "model.issues":
+      x.type = "leaf" 
     if x.attr('join_type') <> "":
       x.join_type = ""
     x.factors.gather()
@@ -133,54 +147,38 @@ question: |
   Download Your OpenLCBR Database
 subquestion: |
   Your openlcbr database has been generated, and can be downloaded
-  below.  To use this database, upload it to the "sources" section of your
-  docassemble playground, and provide it to the docassemble-openlcbr software as
-  described in the documentation.
+  below. For information on how to use this file, see the documentation at
+  [the docassemble-openlcbr github page].
   
   [Click here to download your database]
   
   [Click here to download your database]: ${ database.url_for() }
+  [the docassemble-openlcbr github page]: https://github.com/Gauntlet173/docassemble-openlcbr
 sets: summary
 section: Conclusion
 ---
 mandatory: True
 question: |
-  Analogical Case-Based Reasoner Builder
+  docassemble-openlcbr Reasoner Builder
 subquestion: |
   This interview will take you step-by-step through the process of building an
   analogical case-based reasoner for use with docassemble-openlcbr.
   
-  Docassemble-openlcbr is the ABA Innovation Fellowship project of Jason Morris 
-  of Round Table Law for the 2018/2019 year.  It is generously sponsored by Clio.
+  [docassemble-openlcbr] is the ABA Innovation Fellowship project of [Jason Morris 
+  of Round Table Law] for the 2018/2019 year.  It is generously sponsored by [Clio].
   
-  This interview is provided without warranty and as-is.  It is currently in
-  active development.
+  This software is in active development. If you become aware of problems with it,
+  please report an issue at [the GitHub page for docassemble-openlcbr].
   
-  **This is pre-beta software and should not be used in production environments.**
-  
-  If you become aware of problems with it, please report an issue at
-  [the GitHub page for docassemble-openlcbr].
-  
-  ###Issues
-  * Right now in issue review you have to hit "continue" once for each issue you have viewed.
-  * Right now if you add a sub-node to a leaf node, the leaf node does not correctly
-    become an intermediate node, lose factors, and gain a join_type.
-  * I believe deleting leaf nodes is working, but it should be checked.
-  
-  ###Planned Work
-  * The editor may not deal properly with reasoner files that do not include
-    issues.
-  * Test the output for compatibility with docassemble-openlcbr.
-  * Add some types of input validation.
-  * Make it possible for a docassemble administrator to save an edited database
-    directly to the docassemble playground.
-  
+  [Jason Morris of Round Table Law]: https://www.twitter.com/RoundTableLaw
+  [docassemble-openlcbr]: https://github.com/Gauntlet173/docassemble-openlcbr
+  [Clio]: http://www.clio.com
   [the GitHub page for docassemble-openlcbr]: https://github.com/Gauntlet173/docassemble-openlcbr
 field: intro
 section: Introduction
 ---
 question: |
-  What are the details of the ${ ordinal(i) } factor?
+  Factor Details
 fields:
   - Internal ID: factors[i].id
     help: |
@@ -197,23 +195,36 @@ fields:
       The long description should fill in the blank in the sentence "In this case, it was true that ___."
 section: Factors
 ---
-if: intro
 question: |
-  Do you want to enter a list of factors?
+  Enter factors?
+subquestion: |
+  Do you want to specify factors for this database?
+  
+  [Factors] are things which are true or false about the fact scenario in the cases.
+  
+  [Factors]: ${ url_action('factors_intro') }
 yesno: factors.there_are_any
 section: Factors
 ---
 question: |
-  Do you want to add another factor?
+  Enter additional factors?
+subquestion: |
+  Do you want to specify additional factors for this database?
+  
+  The factors specified so far include:
+  
+  % for f in factors:
+  * ${ f.name }
+  % endfor
 yesno: factors.there_is_another
 section: Factors
 ---
 question: |
-  Do you want to specify the knock-out factors for your model?
-yesno: model.ko_factors.there_are_any
----
-question: |
-  Which of the factors in the system are the knock-out factors for your system?
+  Knock-Out Factors
+subquestion: |
+  Which of the factors in your database should be considered [knock-out factors]?
+  
+  [knock-out factors]: ${ url_action('model_intro') }
 fields:
   - Knock Out Factors: model.ko_factors
     datatype: object_checkboxes
@@ -222,22 +233,34 @@ fields:
 section: Issues
 ---
 question: |
-  Do you want to enter a list of cases?
+  Enter Cases?
+subquestion: |
+  Do you want to specify cases for this database?
+  
+  Previous [cases] are used to determine the likely outcome of new fact patters.
+  
+  [cases]: ${url_action('cases_intro') }
 yesno: cases.there_are_any
 section: Cases
 ---
 question: |
-  Do you want to add another case?
+  Enter Additional Cases?
+subquestion: |
+  Do you want to specify additional cases for this database?
 yesno: cases.there_is_another
 section: Cases
 ---
 question: |
-  What are the details of the ${ ordinal(i) } case?
+  Case Details
 fields:
   - Case ID: cases[i].id
   - Case Name: cases[i].name
   - Year Decided: cases[i].year
   - Citation: cases[i].cite
+  - note: |
+      [View Source]
+      
+      [View Source]: ${cases[i].cite}
   - Winner: cases[i].winner
     datatype: radio
     choices:
@@ -250,14 +273,21 @@ fields:
 section: Cases
 ---
 question: |
-  Do you want to specify an issue database?
+  Enter Issues?
+subquestion: |
+  Do you want to enter [issues] for this database?
+  
+  The Root Legal Issue is the main legal question your reasoner is designed to answer.
+  
+  [issues]: ${ url_action('model_intro') }
 yesno: model.issues.build
 section: Issues
 ---
 if: model.issues.build
 generic object: DAIBPIssue
-question:
-  What are the details of this new sub-issue issue ${ x.text }?
+question: Issue Details
+subquestion: |
+  What are the details of this sub-issue of "${x.id}"?
 fields:
   - Issue ID: x.branches[i].id
   - Issue Name: x.branches[i].text
@@ -271,7 +301,8 @@ section: Issues
 ---
 if: model.issues.build
 generic object: DAIBPIssue
-question:
+question: Root Issue Details
+subquestion: |
   What are the details of the root legal issue?
 fields:
   - Issue ID: model.issues.id
@@ -285,46 +316,53 @@ fields:
 section: Issues
 ---
 generic object: DAIBPIssue
-question: Does the issue ${ x.text } have any sub-issues?
+question: Enter Sub-Issues?
+subquestion: |
+  Does the issue "${ x.id }" have any sub-issues?
 yesno: x.branches.there_are_any
 section: Issues
 ---
 generic object: DAIBPIssue
-question: Does the issue ${ x.text } have another sub-issue?
+question: Enter Additional Sub-Issues?
 subquestion: |
+  Does the issue "${ x.id }" have another sub-issue?
+
   The subissues you have indicated so far are:
+  
   % for b in x.branches:
-  ${ b.text }
+  * ${ b.text }
   % endfor
 yesno: x.branches.there_is_another
 section: Issues
 ---
 generic object: DAIBPIssue
-if: x.type <> 'leaf'
-question: |
-  Are the sub-issues of ${ x.text } conjunctive, or disjunctive?
+question: Enter Logical Type For Issue
 subquestion: |
-  The sub-issues are conjunctive if all of them must be true for ${ x.text } to be true.
-  They are disjunctive if ${ x.text } is true whan any of the sub-issues is true.
+  The sub-issues you have indicated for "${ x.id }" are:
   
-  The sub-issues you have indicated are
   % for b in x.branches:
-  ${ b.text }
+  * ${ b.text }
   % endfor
   
+  Which is necessary to find that the issue "${ x.id }"?
+  
+  **All** of the sub-issues must be true for "${ x.id }" to be true, or
+  
+  **At least one** of the sub-issues must be true for "${ x.id }" to be true.
 fields:
   - Join Type: x.join_type
     datatype: radio
     default: Conjunctive
     choices:
-      - Conjunctive: 'conjunctive'
-      - Disjunctive: 'disjunctive'
+      - All Must Be True: 'conjunctive'
+      - At Least One Must Be True: 'disjunctive'
 section: Issues
 ---
 generic object: DAIBPIssue
 sets: x.factors.there_are_any
-question:
-  What are the factors relevant to the issue ${ x.text }?
+question: Factors Relevant to Issue
+subquestion: |
+  What are the factors relevant to the issue "${ x.id }"?
 fields:
   - Factors For This Issue: x.factors
     datatype: object_checkboxes
@@ -341,9 +379,8 @@ columns:
 edit:
   - id
 ---
-question: Review Your Factors
+question: Review Factors
 subquestion: |
- Use the table below to review your factors and make any required changes.
  ${ factor_table }
  ${ factors.add_action() }
 section: Factors
@@ -357,18 +394,15 @@ columns:
   - Year: row_item.year
 edit:
   - id
-  - factors
 ---
-question: Review Your Cases
+question: Review Cases
 subquestion: |
-  Use the table below to review the cases that you have entered and make any required
-  changes.
   ${ case_table }
   ${ cases.add_action() }
 section: Cases
 field: cases_reviewed
 ---
-question: Review Your Knockout Features
+question: Review Knockout Features
 subquestion: |
   The knock-out factors specified for your model are:
   
@@ -380,66 +414,60 @@ subquestion: |
 section: Issues
 field: ko_factors_reviewed
 ---
-question: Review Your Issues
-subquestion: |
-  ${ model.issues.display_review_tree() }
-section: Issues
-field: issues_reviewed
----
 generic object: DAIBPIssue
-question: Review Issue ${ x.id }
+event: issue_review_screen
+question: |
+  Review Issue: "${ issue_review_screen_target.id }"
 subquestion: |
-  % for b in x.branches:
+  % for b in issue_review_screen_target.branches:
   % if b.complete:
   % endif
   % endfor
 
-  % if x.type <> "top":
-  ${ action_button_html(url_ask(x.parent.instanceName + '.review_screen'), label="Go to Parent") }
+  % if issue_review_screen_target.type <> "top":
+  ${ action_button_html(url_action('set_irs_target', newtarget=issue_review_screen_target.parent.instanceName), label="Review Parent Issue") }
   % endif
   
-  Field | Value | Action
+  Field | Value | Actions
   ---|---|---
-  ID | ${ x.id } | ${ action_button_html(url_ask(x.instanceName + ".id")) }
-  Name | ${ x.text } | ${ action_button_html(url_ask(x.instanceName + ".text")) }
-  Winner-if-Unraised | ${ x.default } | ${ action_button_html(url_ask(x.instanceName + ".default")) }
-  % if x.type <> "leaf":
-  Join Type | ${ x.join_type } | ${ action_button_html(url_ask(x.instanceName + ".join_type")) }
+  ID | ${ issue_review_screen_target.id } | ${ action_button_html(url_ask(issue_review_screen_target.instanceName + ".id")) }
+  Name | ${ issue_review_screen_target.text } | ${ action_button_html(url_ask(issue_review_screen_target.instanceName + ".text")) }
+  Winner-if-Unraised | ${ issue_review_screen_target.default } | ${ action_button_html(url_ask(issue_review_screen_target.instanceName + ".default")) }
+  % if issue_review_screen_target.type <> "leaf":
+  Join Type | ${ issue_review_screen_target.join_type } | ${ action_button_html(url_ask(issue_review_screen_target.instanceName + ".join_type")) }
   % endif
   
-  % if x.type == "leaf":
-  ${ action_button_html(url_action("delete_leaf_node",node=x.instanceName),icon="trash",label="Delete This Node",color='danger') }
+  % if issue_review_screen_target.type == "leaf":
+  ${ action_button_html(url_action("delete_leaf_node",node=issue_review_screen_target.instanceName),icon="trash",label="Delete This Node",color='danger') }
   % endif
   
-  % if x.type <> "leaf":
+  % if (issue_review_screen_target.type == "top" and len(issue_review_screen_target.branches) > 0) or issue_review_screen_target.type == "int":
   
   ####Sub-Issues
   
   Sub-Issue  |  Actions
   ---|---
-  % for b in x.branches:
-  ${b.id} |  ${ action_button_html(url_ask(b.instanceName + ".review_screen")) }
+  % for b in issue_review_screen_target.branches:
+  ${b.id} |  ${ action_button_html(url_action('set_irs_target',newtarget=b.instanceName),label="Review Sub-Issue") }
   % endfor
   % endif
   
-  % if x.type == "leaf":
+  % if issue_review_screen_target.type == "leaf" or (issue_review_screen_target.instanceName == "model.issues" and len(issue_review_screen_target.branches) == 0):
   ###Factors
-  The factors which are listed as relevant to this issue are:
+  Relevant Factors:
   
-  % for f in x.factors:
+  % for f in issue_review_screen_target.factors:
   * ${f.name}
   % endfor
   
-  ${ action_button_html(url_ask(x.instanceName + ".factors"),label="Edit Factors") }
+  ${ action_button_html(url_ask(issue_review_screen_target.instanceName + ".factors"),label="Edit Factors") }
   % endif
   
-  ${ action_button_html(url_action('add_issue_subnode',node=x.instanceName),label="Add a sub-issue to this issue",icon="plus-circle") }
-  
-  ${ x.branches }
-  
-  Type: ${ x.type }
-  
-field: x.review_screen
+  ${ action_button_html(url_action('add_issue_subnode',node=issue_review_screen_target.instanceName),label="Add a sub-issue to this issue",icon="plus-circle") }
+buttons:
+  - Finished Review of Issues:
+      code: |
+        issue_review_finished = True
 section: Issues
 ---
 generic object: DAIBPIssue
@@ -448,6 +476,11 @@ code: |
   x.parent = value(m.group(1))
   del m
 ---
+event: set_irs_target
+code: |
+  newtarget = action_argument('newtarget')
+  issue_review_screen_target = value(newtarget)
+---
 event: add_issue_subnode
 code: |
   node = action_argument('node')
@@ -455,13 +488,13 @@ code: |
   target = value(node)
   if target.type <> "int":
     target.type = "int"
-    target.join_type
     if len(target.factors) > 0:
       target.factors.clear()
+  
   # Add an object to the node
   target.branches.appendObject(DAIBPIssue)
-  force_ask(target.branches.last().complete)
-  force_ask(target.review_screen)
+  target.branches.there_is_another = False
+  target.branches.reset_gathered()
 ---
 event: delete_leaf_node
 code: |
@@ -482,11 +515,10 @@ code: |
       parent.join_type = ""
     parent.factors.reset_gathered()
     parent.factors.there_is_another = True
-  
-  force_ask(parent.review_screen)
 ---
-field: factors_intro
+event: factors_intro
 question: Factors
+section: Factors
 subquestion: |
   The first piece of information that the analogical reasoner will require is a list
   of the relevant "factors." A factor is a fact which may be true or false, and which
@@ -504,9 +536,12 @@ subquestion: |
   The short description will seldom be used.  The long description should fill in the
   blank in the sentence "in this case, it was true that the ______________", and will
   usually start with either the word "defendant" or the word "plaintiff."
+buttons:
+  - Ok: continue
 ---
-field: cases_intro
+event: cases_intro
 question: Cases
+section: Cases
 subquestion: |
   Now that we know what the relevant factors are, we need to give the analogical
   reasoner a set of cases to search.
@@ -529,9 +564,12 @@ subquestion: |
   
   Lastly, the database needs a list of all of the factors which were present in that
   case.
+buttons:
+  - Ok: continue
 ---
-field: model_intro
+event: model_intro
 question: Model
+section: Issues
 subquestion: |
   Now that you have specified the factors and the cases, it is time to describe the
   analogical model of the case.  This has two parts: knock-out factors, and issues.
@@ -569,6 +607,6 @@ subquestion: |
   issues, you will also need to specify the factors that are relevant to that issue.
   Include both the factors that support the plaintiff and those that support the 
   defendant.
-  
-  
+buttons:
+  - Ok: continue
   

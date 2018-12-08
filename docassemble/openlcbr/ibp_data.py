@@ -94,6 +94,7 @@ class DAIBPData(DAObject):
     for c in cases:
       newcase = {}
       newcase['id'] = str(c.id)
+      newcase['name'] = str(c.name)
       newcase['year'] = str(c.year)
       newcase['winner'] = word_to_side(str(c.winner))
       newcase['citation'] = str(c.cite)
@@ -148,8 +149,20 @@ class DAIBPData(DAObject):
       newcase['winner'] = word_to_side(str(case.winner))
     newcase['factors'] = []
     for f in case.factors:
-      newcase['factors'].append(str(case.factors[f]))
+      newcase['factors'].append(f)
     default_cases.append(newcase)
+
+  def get_predictive_strength(self):
+    # This method tests the database by trying to predict
+    # the results of the cases it already knows about, and
+    # letting the user know the results.
+
+    # For Each Case in the Database
+      # Create a test case from that case.
+      # Create a database from the rest of the cases
+      # Predict that Case against the remainder, Record the Result
+    # Tell the user what percentage of cases were correctly predicted.
+    return 100
   
 class DAIBPCase(DAObject):
   def init(self, *pargs, **kwargs):
@@ -162,6 +175,13 @@ class DAIBPIssue(DATree):
     super(DAIBPIssue, self).init(*pargs, **kwargs)
     self.initializeAttribute('factors',DAList)
     self.branches.object_type = DAIBPIssue
+  def iterator(self):
+    # Returns a list of the elements in the tree below this object.
+    output = []
+    output.append(self)
+    for b in self.branches:
+      output.extend(b.iterator())
+    return output
 
 def import_yaml_to_DA(database, factors, cases, model):
   # First, take the content of the yaml file and turn it into Python data.
@@ -183,9 +203,9 @@ def import_yaml_to_DA(database, factors, cases, model):
 
   # Load the Cases into the Cases Object
   for c in data['case_collections']['docassemble_openlcbr_output']['cases']:
-    new_case = DAIBPCase(c['id'])
+    new_case = DAIBPCase()
     new_case.id = c['id']
-    new_case.name = new_case.id # This seems to be necessary for review screens.
+    new_case.name = c['name']
     new_case.year = c['year']
     new_case.cite = c['citation']
     new_case.winner = side_to_word(c['winner'])
