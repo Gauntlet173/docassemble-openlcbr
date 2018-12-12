@@ -35,6 +35,7 @@ objects:
   - data: DAIBPData
   - database: DAFile
   - upload: DAFile
+  - reasoner: DAIBPData
 ---
 code: |
   # When the review starts, it should start at the root of the issue tree.
@@ -80,7 +81,18 @@ code: |
   database.initialize(filename="da-openlcbr.yml")
   yaml_output = data.output_yaml(factors, cases, model)
   database.write(yaml_output)
-  summary
+  
+  reasoner.load(database)
+  if testing.ready():
+    summary
+  else:
+    waiting
+---
+event: waiting
+question: Please wait
+subquestion: |
+  Your reasoner is being compiled, and tested.
+reload: True
 ---
 code: |
   if use_existing:
@@ -142,6 +154,13 @@ code: |
   else:
     cases[i].complete = False
 ---
+code: |
+  testing = background_action('getscore')
+---
+event: getscore
+code: |
+  background_response(reasoner.get_predictive_strength())
+---
 mandatory: True
 question: |
   Download Your OpenLCBR Database
@@ -150,8 +169,11 @@ subquestion: |
   below. For information on how to use this file, see the documentation at
   [the docassemble-openlcbr github page].
   
-  [Click here to download your database]
+  ${ action_button_html(database.url_for(),label="Download Reasoner") }
   
+  Your database has a [leave-one-out predictive score] of ${ testing.get() }%.
+  
+  [leave-one-out predictive score]: ${ url_action('loo_explain') }
   [Click here to download your database]: ${ database.url_for() }
   [the docassemble-openlcbr github page]: https://github.com/Gauntlet173/docassemble-openlcbr
 sets: summary
@@ -228,6 +250,8 @@ subquestion: |
 fields:
   - Knock Out Factors: model.ko_factors
     datatype: object_checkboxes
+    object labeler: |
+      lambda y: y.long_desc
     choices:
       factors
 section: Issues
@@ -257,6 +281,12 @@ fields:
   - Case Name: cases[i].name
   - Year Decided: cases[i].year
   - Citation: cases[i].cite
+  - note: |
+      % if defined('cases[i].cite'):
+      [View Source]
+      
+      [View Source]: ${cases[i].cite}
+      % endif
   - Winner: cases[i].winner
     datatype: radio
     choices:
@@ -264,6 +294,8 @@ fields:
       - Defendant
   - Factors Present In This Case: cases[i].factors
     datatype: object_checkboxes
+    object labeler: |
+      lambda y: y.long_desc
     choices:
       factors
 section: Cases
@@ -362,6 +394,8 @@ subquestion: |
 fields:
   - Factors For This Issue: x.factors
     datatype: object_checkboxes
+    object labeler: |
+      lambda y: y.long_desc
     choices:
       factors
 section: Issues
@@ -377,8 +411,8 @@ edit:
 ---
 question: Review Factors
 subquestion: |
- ${ factor_table }
- ${ factors.add_action() }
+  ${ factor_table }
+  ${ factors.add_action() }
 section: Factors
 field: factors_reviewed
 ---
@@ -390,7 +424,6 @@ columns:
   - Year: row_item.year
 edit:
   - id
-  - factors
 ---
 question: Review Cases
 subquestion: |
@@ -513,6 +546,18 @@ code: |
     parent.factors.reset_gathered()
     parent.factors.there_is_another = True
 ---
+event: loo_explain
+question: Predictive Strength - Leave One Out
+subquestion: |
+  In order to help you gauge how accurate your reasoner is, this script will perform
+  a leave-one-out test. In a leave-one-out test, one of the cases is left out of the
+  database, and treated as the test case that you are trying to predict. The result
+  of the prediction is then compared to the actual outcome of that case. This is
+  repeated for each of the cases in your database, and the percentage of accurate
+  predictions is returned.
+buttons:
+  - Ok: continue
+---
 event: factors_intro
 question: Factors
 section: Factors
@@ -606,3 +651,4 @@ subquestion: |
   defendant.
 buttons:
   - Ok: continue
+  

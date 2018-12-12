@@ -1,0 +1,457 @@
+case_collections:
+  docassemble_openlcbr_output:
+    cases:
+    - citation: http://canlii.ca/t/1v8gd
+      factors:
+      - F2
+      - F9
+      - F11
+      - F8
+      - F12
+      - F10
+      id: C1
+      name: A. (T.M.) v. H. (S.V.), 2007 ABQB 765
+      winner: p
+      year: '2007'
+    - citation: http://canlii.ca/t/1z8w7
+      factors:
+      - F2
+      - F6
+      - F3
+      id: C3
+      name: Bowles v. Beamish, 2008 ABQB 395
+      winner: p
+      year: '2008'
+    - citation: http://canlii.ca/t/1zh2k
+      factors:
+      - F8
+      - F10
+      - F4
+      - F3
+      - F1
+      id: C4
+      name: Brandenburg v. McLeod, 2008 ABQB 406
+      winner: d
+      year: '2008'
+    - citation: http://canlii.ca/t/g1n0r
+      factors:
+      - F7
+      - F8
+      - F2
+      - F6
+      - F9
+      - F10
+      id: C7
+      name: Charles v. Young, 2013 ABQB 632
+      winner: p
+      year: '2013'
+    - citation: http://canlii.ca/t/1m8vl
+      factors:
+      - F10
+      - F4
+      - F3
+      id: C8
+      name: Chatten v. Fricker, 2005 ABQB 972
+      winner: d
+      year: '2005'
+    - citation: http://canlii.ca/t/fwdvk
+      factors:
+      - F2
+      - F10
+      - F4
+      - F3
+      - F1
+      id: C9
+      name: D. (D.) v. S. (C.), 2012 ABPC 322
+      winner: d
+      year: '2012'
+    - citation: http://canlii.ca/t/hq74g
+      factors:
+      - F8
+      - F2
+      - F6
+      - F9
+      - F10
+      - F4
+      id: C10
+      name: Degner v. Goerz and McKenzie, 2018 ABPC 26
+      winner: p
+      year: '2018'
+    - citation: http://canlii.ca/t/hpdqd
+      factors:
+      - F6
+      - F9
+      - F7
+      - F2
+      id: C12
+      name: Ernst v. Martins, 2017 ABQB 785
+      winner: p
+      year: '2017'
+    - citation: http://canlii.ca/t/h4g59
+      factors:
+      - F9
+      - F7
+      - F8
+      - F2
+      - F10
+      - F4
+      - F3
+      id: C13
+      name: Evans v. Nelson, 2017 ABPC 141
+      winner: d
+      year: '2017'
+    - citation: http://canlii.ca/t/2bp40
+      factors:
+      - F6
+      - F2
+      - F10
+      id: C14
+      name: F. (E.V.) v. M. (W.), 2010 ABQB 451
+      winner: p
+      year: '2010'
+    - citation: http://canlii.ca/t/24dtp
+      factors:
+      - F15
+      - F9
+      - F2
+      - F14
+      - F10
+      - F4
+      id: C18
+      name: Gordon v. Towell, 2009 ABQB 415
+      winner: p
+      year: '2009'
+    - citation: http://canlii.ca/t/fz77g
+      factors:
+      - F9
+      - F2
+      - F4
+      - F3
+      id: C19
+      name: H. (K.G.) v. V. (S.L.), 2013 ABQB 326
+      winner: p
+      year: '2013'
+    - citation: http://canlii.ca/t/1vj6p
+      factors:
+      - F7
+      - F2
+      - F15
+      - F10
+      - F4
+      - F3
+      id: C21
+      name: Howard v. Sandau, 2008 ABQB 34
+      winner: d
+      year: '2008'
+    - citation: http://canlii.ca/t/22qhr
+      factors:
+      - F14
+      - F6
+      - F2
+      - F15
+      - F10
+      id: C25
+      name: Kiernan v. Stach Estate, 2009 ABQB 150
+      winner: p
+      year: '2009'
+    - citation: http://canlii.ca/t/gn030
+      factors:
+      - F7
+      - F9
+      - F6
+      - F15
+      id: C26
+      name: Klein v. Wolbeck, 2016 ABQB 28
+      winner: p
+      year: '2016'
+    - citation: http://canlii.ca/t/gn4m0
+      factors:
+      - F7
+      - F2
+      - F15
+      - F6
+      - F10
+      id: C27
+      name: Knight v. Wowk, 2015 ABPC 286
+      winner: p
+      year: '2015'
+    - citation: http://canlii.ca/t/fvj70
+      factors:
+      - F7
+      - F2
+      - F8
+      - F5
+      - F9
+      - F6
+      id: C28
+      name: Kostin v. Eaket, 2012 ABQB 756
+      winner: p
+      year: '2012'
+    - citation: http://canlii.ca/t/gfghr
+      factors:
+      - F14
+      - F2
+      - F15
+      - F9
+      - F6
+      - F10
+      id: C31
+      name: Martin v. Riley, 2014 ABQB 725
+      winner: p
+      year: '2014'
+    - citation: http://canlii.ca/t/1pw62
+      factors:
+      - F2
+      - F15
+      - F6
+      - F10
+      id: C32
+      name: Medora v. Kohn, 2003 ABQB 700
+      winner: p
+      year: '2003'
+    - citation: http://canlii.ca/t/g8n8j
+      factors:
+      - F6
+      - F8
+      - F2
+      - F14
+      - F4
+      id: C34
+      name: Nelson Estate (Re), 2014 ABQB 413
+      winner: p
+      year: '2014'
+    - citation: http://canlii.ca/t/fq4v6
+      factors:
+      - F8
+      - F2
+      - F9
+      - F11
+      - F16
+      - F3
+      id: C35
+      name: Pinksen v. Barritt, 2012 ABPC 41
+      winner: p
+      year: '2012'
+    - citation: http://canlii.ca/t/gt6vr
+      factors:
+      - F6
+      - F2
+      - F15
+      id: C38
+      name: Rockey v. Hartwell, 2016 ABQB 438
+      winner: p
+      year: '2016'
+    - citation: http://canlii.ca/t/fkptk
+      factors:
+      - F2
+      - F7
+      - F10
+      - F4
+      - F3
+      - F1
+      id: C39
+      name: Rubin v. Gendemann, 2011 ABQB 71
+      winner: d
+      year: '2011'
+    - citation: http://canlii.ca/t/1zvm6
+      factors:
+      - F2
+      - F7
+      - F6
+      - F15
+      id: C41
+      name: Shunamon v. Diegel, 2008 ABQB 291
+      winner: p
+      year: '2008'
+    - citation: http://canlii.ca/t/g23cb
+      factors:
+      - F6
+      - F17
+      - F3
+      id: C43
+      name: Tait v. Westphal 2013 ABQB 668
+      winner: p
+      year: '2013'
+    - citation: http://canlii.ca/t/gmvfk
+      factors:
+      - F15
+      - F7
+      - F10
+      - F3
+      - F4
+      id: C45
+      name: Umbach v. Lang Estate, 2016 ABQB 16
+      winner: d
+      year: '2016'
+    - citation: http://canlii.ca/t/g6gdk
+      factors:
+      - F6
+      - F15
+      - F2
+      - F9
+      id: C46
+      name: Wen v. Li, 2014 ABQB 195
+      winner: p
+      year: '2014'
+    - citation: http://canlii.ca/t/h4j28
+      factors:
+      - F14
+      - F6
+      - F15
+      - F2
+      - F10
+      id: C47
+      name: Wright v. Lemoine, 2017 ABQB 395
+      winner: p
+      year: '2017'
+    id: docassemble_openlcbr_output
+domain_models:
+  docassemble_openlcbr_output:
+    id: docassemble_openlcbr_output
+    issues:
+      economic and domestic unit:
+        factors:
+        - F6
+        - F5
+        - F4
+        - F3
+        - F7
+        - F11
+        - F8
+        - F12
+        - F2
+        - F9
+        - F10
+        - F13
+        - F15
+        - F16
+        id: economic and domestic unit
+        proposition: the parties function as an economic and domestic unit
+        type: leaf
+        winner_if_unraised: None
+      emotional commitment:
+        factors:
+        - F11
+        - F14
+        - F13
+        - F17
+        id: emotional commitment
+        proposition: the parties are emotionally committed to one another
+        type: leaf
+        winner_if_unraised: p
+      relationship of interdependence:
+        antecedents:
+        - share lives
+        - emotional commitment
+        - economic and domestic unit
+        id: relationship of interdependence
+        proposition: the parties were in a relationship of interdependence
+        type: top
+        winner_if_unraised: None
+      share lives:
+        factors:
+        - F1
+        - F13
+        - F14
+        - F17
+        - F11
+        id: share lives
+        proposition: the parties share one another's lives
+        type: leaf
+        winner_if_unraised: p
+    ko_factors:
+    - F16
+    - F3
+factors:
+  F1:
+    description: the parties were not ordinarily cohabiting
+    favored_side: d
+    id: F1
+    proposition: no cohabitation
+  F10:
+    description: the parties did not jointly own, use, and acquire property other
+      than a residence
+    favored_side: d
+    id: F10
+    proposition: no joint property
+  F11:
+    description: the parties intended that the relationship be one of permanence
+    favored_side: p
+    id: F11
+    proposition: intention of permanence
+  F12:
+    description: one party did not provide the other with the care and support ordinarily
+      expected of a common-law spouse
+    favored_side: d
+    id: F12
+    proposition: inadequate support
+  F13:
+    description: the parties had separate social lives
+    favored_side: d
+    id: F13
+    proposition: separate social lives
+  F14:
+    description: the parties expressed feelings of affection for one another
+    favored_side: p
+    id: F14
+    proposition: expressions of affection
+  F15:
+    description: the parties shared household duties
+    favored_side: p
+    id: F15
+    proposition: shared household duties
+  F16:
+    description: the parties acknowledged and relied on the existence of an adult
+      interdependent partnership in prior court applications
+    favored_side: p
+    id: F16
+    proposition: acknowledgement
+  F17:
+    description: one of the parties spent considerable time providing care during
+      an illness of the other
+    favored_side: p
+    id: F17
+    proposition: caring through illness
+  F2:
+    description: the parties have a conjugal relationship
+    favored_side: p
+    id: F2
+    proposition: conjugal
+  F3:
+    description: the relationship was not exclusive
+    favored_side: d
+    id: F3
+    proposition: no exclusivity
+  F4:
+    description: the parties did not hold themselves out to others as an economic
+      and domestic unit
+    favored_side: d
+    id: F4
+    proposition: no holding out
+  F5:
+    description: the parties have formalized their legal obligations, intentions and
+      responsibilities toward one another
+    favored_side: p
+    id: F5
+    proposition: formalization
+  F6:
+    description: the parties have made direct or indirect contributions to the other
+      or to their mutual well-being
+    favored_side: p
+    id: F6
+    proposition: contributions to mutual well-being
+  F7:
+    description: the parties are financially dependent or interdependent on one another
+    favored_side: p
+    id: F7
+    proposition: financial (inter)dependence
+  F8:
+    description: the parties have arrangements for financial support
+    favored_side: p
+    id: F8
+    proposition: financial support arrangements
+  F9:
+    description: the parties care for and/or support children together
+    favored_side: p
+    id: F9
+    proposition: children

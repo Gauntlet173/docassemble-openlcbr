@@ -1,0 +1,66 @@
+features:
+  javascript: docassemble.openlcbr:data/static/list_collapse.js
+  css: docassemble.openlcbr:data/static/list_collapse.css
+---
+modules:
+  - .ibp_data
+  - docassemble.base.util
+---
+objects:
+  - factors: DAList.using(object_type=DAObject)
+  - cases: DAList.using(object_type=DAIBPCase)
+  - model: DAObject
+  - model.ko_factors: DAList
+  - model.issues: DAIBPIssue
+  - reasoner: DAIBPData
+  - upload: DAFile
+  - output: DATree
+---
+mandatory: true
+code: |
+  intro_read
+  upload
+  reasoner.load(upload)
+  
+  if testing.ready():
+    summary
+  else:
+    waiting
+---
+event: waiting
+question: Waiting for Testing to Complete
+reload: True
+---
+question: Upload Reasoner File
+fields:
+  - Your Reasoner: upload
+    datatype: file
+---
+question: docassemble-openlcbr Reasoner Tester
+subquestion: |
+  This tool will allow you to test the strength of your docassemble-openlcbr reasoner.
+  
+  You will be asked to upload the reasoner.  The reasoner will then be used to predict
+  the outcome of each of the cases in its database of precedents, using the rest of
+  the precedent cases for comparison. You will be provided with a score indicating the
+  percentage of cases in the database which the reasoner correctly predicts.
+field: intro_read
+---
+event: summary
+question: Reasoner Testing Results
+subquestion: |
+  ${ output.display_tree() }
+---
+code: |
+  testing = background_action('get_predictions')
+---
+event: get_predictions
+code: |
+  result = reasoner.get_all_predictions()
+  background_response_action('save_output',a=result)
+---
+event: save_output
+code: |
+  output = action_argument('a')
+  background_response()
+---

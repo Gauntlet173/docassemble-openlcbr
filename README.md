@@ -5,40 +5,108 @@ A docassemble package for case outcome prediction using the analogical reasoning
 ## Installation Procedure
 Use the docassemble package manager to add the package from https://github.com/Gauntlet173/docassemble-openlcbr
 ## Usage
-Install the package and run the explain\_lcbr\_test.yml interview to see the current state of development.
 Load the db\_builder.yml interview for an interview that will assist you in building
-your own analogical reasoning tools for use with docassemble-openlcbr.
-## Demo
-[Click here for a live demo of what the user sees](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
+your own analogical reasoning tools for use with docassemble-openlcbr. That interview
+will provide you with a leave-one-out accuracy rating when the interview is complete.
 
-[Click here for a live demo of how to build a reasoner](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fdb_builder.yml)
+In order to debug your reasoner, use the deep\_reasoner\_test.yml interview to view the
+detailed results of all leave-one-out tests of the prediction algorithm.
+
+Once you have a working reasoner, implement it in your docassemble interview by
+following these steps:
+
+1. Upload your reasoner file into the sources directory in docassemble.
+1. Include `.ibp_data` in the `modules` block of your interview.
+2. Include the following lines in the `objects` block of your interview, replacing
+   `reasoner_name.yml` with the name of the file you uploaded:
++
+```
+objects:
+  - reasoner: DAIBPData
+  - database: DAStaticFile.using(filename="data/sources/reasoner_name.yml")
+  - test_case: DAIBPCase
+```
+3. In your interview, populate the DAList `test_case.factors` with the factor IDs from your
+   reasoner that are relevant to your test case.
+4. Call `reasoner.load(database)` to initialize the reasoner. If you do not want to
+   include the cases listed in your database, you can call `reasoner.load\_model\_only(database)`,
+   and then cases can be added to the reasoner using `reasoner.add\_precedent\_case(case)`
+   where `case` is a DAIBPCase object with attributes of `.id`, `.winner` (either 'p'
+   or 'd'), and `.factors` as in a test case.
+5. Call `reasons = reasoner.predict(test_case, issue="id of root issue")`, replacing
+   "id of root issue" with the id you gave to the root issue in your database. It will
+   return a DATree object which is the explanation of the result.
+6. Obtain the result of the prediction by looking at `reasons.prediction`. The value 'p'
+   indicates that the outcome was predicted for the plaintiff, 'd' for the defendant,
+   and 'a' indicates that the reasoner abstained.
+7. To display the reasons to the user, you must include the following in the
+   `features` block of your interview:
++
+```
+features:
+  javascript: docassemble.openlcbr:data/static/list_collapse.js
+  css: docassemble.openlcbr:data/static/list_collapse.css
+```
++
+   Then, use `reasons.display_tree()` to display a collapsing tree interface of
+   the reasoner's results.
+
+## Demos
+There are four live demos of docassemble-openlcbr functionality available. The source code for all the demos is included
+in the package:
+
+0. The [Trade Secrets demo](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fexplain_lcbr_test.yml)
+   is a minimal implementation of docassemble-openlcbr.
+1. The [AIP Tool](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Faip_tool.yml)
+   demonstrates a real-world use of an analogical reasoner built using
+   docassemble-openlcbr, and display's the reasoner's reasons on the last page of
+   the interview.
+2. The [Reasoner Builder](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fdb_builder.yml)
+   can be used to create a reasoner database and get a raw
+   leave-one-out predictive score.
+3. The [Deep Reasoner Tester](https://testda.roundtablelaw.ca/interview?i=docassemble.openlcbr%3Adata%2Fquestions%2Fdeep_reasoner_tester.yml) can be used to see the reasons of all the leave-one-out
+   tests in order to troubleshoot bad predictions.
+
 ## Clio Integration Demo
-As part of the sponsorship of the fellowship project, I have developed a version of the
-explain\_lcbr\_test.yml interview which uses information obtained from a live
+Thanks to Clio's sponsorship of the ABA Fellowship Project, there is also a version of the
+Trade Secret interview which uses information obtained from a live
 [Clio](http://www.clio.com) account, demonstrating the possibility of integrating
 docassemble-openlcbr with live data acquired over the Clio API.
+
+In this demo, both the information from the test case and the precedents are obtained
+from the live Clio account.  Only the factors and the issue model need to be specified
+in the database.
 
 [Click here](https://testda.roundtablelaw.ca/interview?i=docassemble.clio%3Adata%2Fquestions%2Fclio_openlcbr_demo.yml)
 for a live demo of the integration between Clio and docassemble-openlcbr.
 
-The code for connecting to Clio is not included in docassemble-openlcbr, but may be
-released later under a different package.
+## Documentation
+A number of blog posts about the project are available at 
+[Jason Morris' Medium page](https://medium.com/@jason_90344).
 
-## Progress:
-* Matthias Grabmair backported openlcbr to Python 2.7 to make it easier to use with docassemble's module system.
-* Got openlcbr running inside the package.
-* Test interview created, running, displaying output readably.
-* Created prototype for improved explanation structure, and another for improved explanation display.
-* Created DATree data structure for explanations with display\_tree() function for pretty-display
-* Added plain-language description of issues to database.
-* Modified openlcbr algorithm to generate explanation in DATree structure
-* Implemented new version of ibp to utilize DATree structure for explanation.
-* Changed explanation output to be natural language, narrative.
-* Updated interview and lcbr to run the reasoner against a case specified by the user.
-* Added an interview capable of building an openlcbr database from scratch.
-* Added the ability to automatically generate a test-case query screen from the data source.
-* Added the ability to edit a previously-generated openlcbr database.
-## Work Plan
-* New demonstration analogical reasoning database in a family law issue.
-* Integrate the analogical reasoning tool with a wider-purpose demonstration interview.
-* Create documentation and tutorials explaining how to use the system.
+Documentation for docassemble-openlcbr is still a work in progress, and will be available at
+[https://gauntlet173.github.io/docassemble-openlcbr/](https://gauntlet173.github.io/docassemble-openlcbr/).
+
+## Help
+Please report issues at the docassemble-openlcbr [GitHub](https://github.com/Gauntlet173/docassemble-openlcbr).
+
+For support, join the #analogyproject channel at the [docassemble slack](https://docassemble.slack.com).
+
+To offer feedback, contact [Jason Morris](https://www.twitter.com/RoundTableLaw).
+
+## Thanks
+* Kevin Ashley and Stefanie Bruninghaus for developing the IBP Algorithm
+* Matthias Grabmair for the Python implementation of IBP in [openlcbr]() on which
+  docassemble-openlcbr is based. (And for re-implementing it in Python 2.7!)
+* The American Bar Association Center for Innovation, and in particular
+  Chase Hertel, Sarah Glassmeyer, and Joshua Furlong, who were particularly involved
+  in selecting my proposal.
+* Jack Newton, Joshua Lenon, and Chris Thompson of Clio, who were instrumental in
+  my fellowship receiving sponsorship funding from Clio.
+* Jonathan Pyle, for developing docassemble, and for his constant and expert
+  assistance over the three months that this project was underway.
+* The docassemble user community who were extremely helpful and patient with a lawyer
+  who was learning docassemble and Python.
+  
+## Version History
+0.5.0 - First "feature complete" version.

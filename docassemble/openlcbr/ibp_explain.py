@@ -71,7 +71,7 @@ def predict_issue(case, issue_id, factors, cases, model):
   issue = model['issues'][issue_id]
   
   #    if it's a leaf issue, predict it, and return the prediction.
-  if issue['type'] == "leaf_issue":
+  if issue['type'] == "leaf_issue" or issue['type'] == "leaf":
     #log("Before leaf issue predict", "info")
     explanation = predict_leaf_issue(case, issue_id, factors, cases, model)
     #log("After leaf issue predict", "info")
@@ -104,7 +104,7 @@ def predict_issue(case, issue_id, factors, cases, model):
     # If this issue is not raised
     if explanation.raised == False:
       # If it has a default
-      if 'winner_if_unraised' in issue:
+      if 'winner_if_unraised' in issue and issue['winner_if_unraised'] <> "None":
         # Predict the default
         explanation.prediction = issue['winner_if_unraised']
         explanation.text = "The issue of whether it is true that " + model['issues'][issue_id]['proposition'] \
@@ -164,7 +164,7 @@ def predict_leaf_issue(case, issue_id, factors, cases, model):
   explanation.raised = len(set(case['factors']) & set(issue['factors'])) > 0
   
   if not explanation.raised: #this is not the same format he used in the other one
-    if 'winner_if_unraised' in issue:
+    if 'winner_if_unraised' in issue and issue['winner_if_unraised'] <> "None":
       explanation.prediction = issue['winner_if_unraised']
       explanation.text = "The issue of whether it is true the " + issue['proposition'] + " was not raised " \
         + "in the test case, and can be presumed to " \

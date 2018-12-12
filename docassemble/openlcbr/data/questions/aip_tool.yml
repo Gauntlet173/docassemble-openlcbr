@@ -1,0 +1,731 @@
+metadata:
+  author: Jason Morris
+---
+features:
+  javascript: docassemble.openlcbr:data/static/list_collapse.js
+  css: docassemble.openlcbr:data/static/list_collapse.css
+---
+modules:
+  - .ibp_data
+  - .aip_dates
+---
+objects:
+  - reasoner: DAIBPData
+  - database: DAStaticFile.using(filename="data/sources/roi3.yml")
+  - test_case: DAIBPCase
+  - test_case.factor: DAObject
+  - first_party: Individual
+  - second_party: Individual
+  - cohabitation: DAObject
+  - period_of_separation: DAList.using(object_type=DAObject)
+  - written_agreement: DAList.using(object_type=DAObject)
+  - declaration_of_irreconcilability: DAList.using(object_type=DAObject)
+---
+mandatory: True
+code: |
+  period_of_separation.complete_attribute = "complete"
+  reasoner.load(database)
+  test_case.factors.there_is_another = False
+---
+code: |
+  period_of_separation[i].start_date
+  period_of_separation[i].end_date
+  if period_of_separation[i].intended_to_terminate:
+    period_of_separation[i].ended_with_reconciliation_attempt
+  period_of_separation[i].complete = True
+---
+mandatory: True
+code: |
+  # This is the mandatory code flow block.
+  introduction
+  purpose_of_tool
+  acknowledge_not_legal_advice
+  acknowledge_privacy_notice
+  acknowledge_present_time
+---
+field: introduction
+question: Adult Interdependent Partnership Tool
+subquestion: |
+  This tool will give you a prediction, based on the fact scenario you describe, of
+  whether two individuals are in an adult interdependent relationship, according to the
+  [Adult Interdependent Partnership Act, SA 2002, c A-4.5].
+  
+  This tool is a demonstration of software developed by [Jason Morris] of Round Table
+  Law as a part of an Innovation Fellowship for 2018/2019 with the [Amercian Bar
+  Association Center for Innovation]. The project is an open-source tool
+  for automating case-based analogical reasoning within docassemble.
+  
+  [Docassemble] is a leading open-source tool for automating legal interviews and
+  document generation.
+  
+  The fellowship project software is called **docassemble-openlcbr**, and is
+  [available on Github].
+  
+  The fellowship was sponsored by [Clio], a legal practice management software
+  provider.
+  
+  [Clio]:http://www.clio.com
+  [Docassemble]:https://docassemble.org
+  [Jason Morris]:http://www.twitter.com/RoundTableLaw
+  [available on Github]:https://github.com/Gauntlet173/docassemble-openlcbr
+  [Adult Interdependent Partnership Act, SA 2002, c A-4.5]:http://canlii.ca/t/528fs
+---
+field: acknowledge_not_legal_advice
+question: This Is Not Legal Advice
+subquestion: |
+  By using this tool you confirm that you understand and agree that this tool is not
+  providing you with legal advice, and that the use of this tool does not create a
+  lawyer/client relationship between you and any other person.
+---
+field: purpose_of_tool
+question: How To Use This Tool
+subquestion: |
+  You may be familiar with the idea of "common law marriage." The Province
+  of Alberta has changed some of the rules around common law marriage
+  by writing a law that creates a similar legal category, called
+  "adult interdependent partnership."
+  
+  Whether you are in an adult interdependent partnership with someone affects
+  a lot of your rights and responsibilities, including:
+  
+  * Whether you are entitled to spousal support
+  * Whether you are entited to a share of your partner's estate on their death
+  * Whether you qualify as a relative for health care and decision-making purposes
+  * Whehter you can use family violence protections with regard to your partner
+  
+  Whether you are in an adult interdependent partnership is dependent on some factors
+  that can be easily measured, like time spent living together, or whether the two
+  people are parents to children.  But it also depends on a number of factors that
+  are not easily measured, like whether the two people are in a "relationship of
+  interdependence."
+  
+  In the past, those sorts of questions have been difficult to automate. 
+  This tool uses a form of artificial intelligence called cased-based reasoning by
+  analogy to provide predictions for those hard-to-measure questions.  This form of
+  artificial intelligence requires an expert to design an algorithm that can be used
+  to answer those questions.
+  
+  The algorithm used in this tool was designed by Jason Morris of Round Table Law in
+  Sherwood Park, Alberta.
+  
+  The tool cannot predict all scenarios.  If your fact scenario is one that it cannot
+  predict, it will say so.  Even if it gives you a prediction, that prediction may
+  be incorrect.
+  
+  This tool will be most effective for someone who is familiar with the details of the
+  relationship between the two people.  It will work best if it is used by one or both
+  of the two people themselves.
+---
+field: acknowledge_present_time
+question: |
+  Advice is "As Of Today"
+subquestion: |
+  This tool is designed to provide advice as to whether or not two individuals are in
+  an adult interdependent relationship as of today, the day you use the tool.
+  
+  If what you need to know is whether two people were adult interdepdent
+  partners as of an earlier date, or will be adult interdependent partners on a
+  later date, this tool should not be used.
+---
+field: acknowledge_privacy_notice
+question: Privacy Notice
+subquestion: |
+  The information collected in this tool will be used only to provide you with an
+  automated prediction of whether the individuals in the fact scenario you describe
+  are in an adult interdependent relationship. It will not be used or disclosed to
+  anyone for any other purpose. 
+  
+  The collection, use, and disclosure of information in this tool is governed by
+  the [Personal Information Protection Act, SA 2003, c P-6.5]. The person responsible
+  for the use of your data is Jason Morris, and can be reached by contacting
+  Round Table Law.
+  
+  [Personal Information Protection Act, SA 2003, c P-6.5]:http://canlii.ca/t/536x7
+---
+mandatory: True
+question: Your Result
+subquestion: |
+  % if either_party_is_married:
+  You have indicated that one or both of the parties is now or was previously
+  married.
+  
+  Unfortunately, this tool is not designed to assist with determining whether
+  or not an adult interdependent relationship exists in the context of one or
+  more marriages.
+  
+  As such, this tool cannot predict whether ${ first_party } and ${ second_party } are
+  adult interdependent partners.
+  % elif aipa_exists:
+  You have indicated that one or both of the parties has an adult interdependent partnership
+  agreement.
+  
+  Unfortunately, this tool is not designed to assist with determining whether
+  or not an adult interdependent relationship exists in the context of one or more
+  adult interdependent partnership agreements, either because of the agreement, or
+  otherwise.
+  
+  As such, this tool cannot predict whether ${ first_party } and ${ second_party } are
+  adult interdependent partners.
+  % elif first_party.is_minor or second_party.is_minor:
+  You have indicated that one or both of the parties is a minor.
+  
+  It is possible under limited circumstances for a person under the age of 18 to
+  be in an adult interdependent partnership. However, such a relationship requires
+  an adult interdependent partnership agreement, and this tool does not predict
+  whether such agreements are valid.
+  
+  As such, this tool cannot predict whether ${ first_party } and ${ second_party } are
+  adult interdependent partners.
+  % elif parties_related_by_blood_or_adoption:
+  You have indicated that ${ first_party } and ${ second_party } are related to one
+  another by blood or adoption.
+  
+  It is possible for people related to one another by blood or adoption to be in an
+  adult interdependent partnership. However, such a relationship requires an adult
+  interdependent partnership agreement, and this tool does not predict whether such
+  agreements are valid.
+  
+  As such, this tool cannot predict whether ${ first_party } and ${ second_party } are
+  adult interdependent partners.
+  % elif cannot_predict_roi:
+  Give the fact scenario you described, the tool is not able to make a prediction
+  of whether the relationship is legally a relationship of interdependence.
+  
+  This is most likely for one of two reasons: either the facts that you have described
+  are quite unique, or the issue has been decided inconsistently on similar facts
+  in the past.
+  
+  As such, this tool cannot predict whether ${ first_party } and ${ second_party } are
+  adult interdependent partners.
+  
+  This tool's analogical reasoning as to whether ${ first_party } and ${ second_party }
+  are in a relationship of interdependence can be viewed here:
+  
+  ${ reasons.display_tree() }
+  % else:
+  % if aip_exists:
+  This tool predicts that ${ first_party } and ${ second_party } are in an adult
+  interdependent relationship.
+  
+  The adult interdependent relationship commenced on ${ aip_start_date }.
+  
+  This tool's analogical reasoning as to whether ${ first_party } and ${ second_party }
+  are in a relationship of interdependence can be viewed here:
+  
+  ${ reasons.display_tree() }
+  % else:
+  This tool predicts that ${ first_party } and ${ second_party } are not in an
+  adult interdependent relationship.
+  
+  This tool's analogical reasoning as to whether ${ first_party } and ${ second_party }
+  are in a relationship of interdependence can be viewed here:
+  
+  ${ reasons.display_tree() }
+  % endif
+  % endif
+---
+question: What is the name of the first person?
+subquestion: |
+  What is the name of the first person for whom you want a prediction?
+  
+  What you enter as a name doesn't matter, it will only be used to identify the person
+  in later questions in the interview.
+fields:
+  - First Name: first_party.name.first
+---
+question: What is the name of the second person?
+subquestion: |
+  What is the name of the second person for whom you want a prediction?
+  
+  What you enter as a name doesn't matter, it will only be used to identify the person
+  in later questions in the interview.
+fields:
+  - First Name: second_party.name.first
+---
+question: |
+  Is ${ first_party } an adult interdependent partner of anyone other than
+  ${ second_party }?
+subquestion: |
+  A person cannot be an adult interdependent partner with more than one person at a time.
+  
+  Does ${ first_party } have any pre-existing adult interdependent partnerships?
+yesno: first_party.has_other_aip
+---
+question: |
+  Is ${ second_party } an adult interdependent partner of anyone other than
+  ${ first_party }?
+subquestion: |
+  A person cannot be an adult interdependent partner with more than one person at a time.
+  
+  Does ${ second_party } have any pre-existing adult interdependent partnerships?
+yesno: second_party.has_other_aip
+---
+generic object: Individual
+question: Is ${x} a minor?
+subquestion: |
+  Is ${x} under the age of 18?
+yesno: x.is_minor
+---
+generic object: Individual
+question: Is ${x} now, or have they ever been married?
+yesno: x.ever_married
+---
+generic object: Individual
+question: Has ${x} ever been party to an Adult Interdependent Partnership Agreement?
+subquestion: |
+  If you are not sure, the answer to this question is probably "no."
+  
+  An Adult Interdependent Partnership Agreement is a formal agreement written and
+  signed by people who wish to start an adult interdepentent partnership immediately.
+yesno: x.has_aipa
+---
+question: Do ${ first_party } and ${ second_party } have children, by birth or adoption?
+subquestion: |
+  The question here is whether ${ first_party } and ${ second_party } have children of
+  whom they are both parents, either by adoption or birth.
+  
+  If, for example, ${ first_party } is the parent of a child who live with both
+  ${ first_party } and ${ second_party }, but ${ second_party } is not the child's
+  biological parent, and has not adopted the child, then the answer to this question
+  is "no".
+yesno: parties_have_child_by_birth_or_adoption
+---
+question: |
+  When did ${ first_party } and ${ second_party } first have a child by birth or
+  adoption?
+subquestion: |
+  If it was by the birth of a child, the date will be the birthdate of the first of
+  their children.  If it was by adoption, the date will be the date of the adoption.
+fields:
+  - First Child of Relationship Date: child_of_relationship_date
+    datatype: date
+--- 
+question: Have ${ first_party } and ${ second_party } ever lived together?
+yesno: cohabitation.started
+---
+if: cohabitation.started
+question: When did ${ first_party } and ${ second_party } first live together?
+fields:
+  - Date parties first lived together?: cohabitation.start_date
+    datatype: date
+---
+if: cohabitation.started
+question: Do ${ first_party } and ${ second_party } still live together?
+subquestion: |
+  If there were times that ${ first_party } and ${ second_party } were separated in
+  between, don't worry about that. I will ask you about that later.  For now, the
+  question is whether ${ first_party} and ${ second_party } live together, today.
+noyes: cohabitation.has_terminated
+---
+if: cohabitation.has_terminated
+question: When did ${ first_party } and ${ second_party } stop living together?
+subquestion: |
+  The question here is when did ${ first_party } and ${ second_party } most recently
+  stop living together.  If there were other periods of time between
+  ${ cohabitation.start_date } and now that they lived apart, I will ask you about
+  those later.
+fields:
+  - Date parties stopped living together: cohabitation.end_date
+    datatype: date
+---
+if: cohabitation.started
+question: Were there periods of separation?
+subquestion: |
+  Between ${ cohabitation.start_date } and
+  % if cohabitation.has_terminated:
+  ${ cohabitation.end_date },
+  % else:
+  now,
+  % endif
+  have there been significant periods of time during which
+  ${ first_party } and ${ second_party } lived apart from one another?
+yesno: period_of_separation.there_are_any
+---
+question: Is there another period of separation?
+subquestion: |
+  The periods of separation you have described are as follows:
+  
+  % for p in period_of_separation:
+  * From ${ p.start_date } to ${ p.end_date }
+  % endfor
+  
+  Are there any other periods of separation?
+yesno: period_of_separation.there_is_another
+---
+question: Describe the period of separation
+fields:
+  - When did it start?: period_of_separation[i].start_date
+    datatype: date
+  - When did it end?: period_of_separation[i].end_date
+    datatype: date
+---
+question: Was the separation a break-up?
+subquestion: |
+  Specifically with regard to the separation that started on ${period_of_separation[i].start_date} and
+  ended on ${period_of_separation[i].end_date}, did either ${ first_party } or ${ second_party } intend,
+  at the time, for that separation to terminate their relationship?
+yesno: period_of_separation[i].intended_to_terminate
+---
+if: period_of_separation[i].intended_to_terminate
+question: |
+  Did the separation end in a reconciliation between ${ first_party } and
+  ${ second_party }?
+subquestion: |
+  Specifically with regard to the separation that started on ${period_of_separation[i].start_date} and
+  ended on ${period_of_separation[i].end_date}, did ${ first_party } and ${ second_party } reconcile with
+  one another on ${period_of_separation[i].end_date}?
+yesno: period_of_separation[i].ended_with_reconciliation_attempt
+---
+question: |
+  Do either ${ first_party } or ${ second_party } provide domestic support
+  and personal care to the other for payment?
+subquestion: |
+  For example, if ${ first_party } was employed by an assisted living facility in
+  which ${ second_party } lived, the answer to this question would be "yes".
+  
+  Similarly, if ${ second_party } was a nurse paid by ${ first_party } (or anyone else)
+  to provide personal care and domestic support to ${ first_party }, the answer to
+  this question is yes.
+yesno: service_relationship
+---
+question: |
+  Are ${ first_party } and ${ second_party } related by blood or adoption?
+yesno: parties_related_by_blood_or_adoption
+---
+code: | 
+  if first_party.ever_married or second_party.ever_married:
+    either_party_is_married = True
+  else:
+    either_party_is_married = False
+---
+code: |
+  if first_party.has_aipa or second_party.has_aipa:
+    aipa_exists = True
+  else:
+    aipa_exists = False
+---
+code: |
+  if aip_start_date <> None and roi_exists:
+    if aip_invalid:
+      aip_exists = False
+    else:
+      aip_exists = True
+---
+code: |
+  aip_start_date = get_aip_dates(cohabitation, parties_have_child_by_birth_or_adoption, child_of_relationship_date, period_of_separation, declaration_of_irreconcilability, written_agreement)
+---
+code: |
+  if aip_invalid_no_multiples:
+    aip_invalid = True
+  else:
+    aip_invalid = False
+---
+code: |
+  if not service_relationship and roi_predicted:
+    roi_exists = True
+  else:
+    roi_exists = False
+---
+code: |
+  test_case.finalized
+  reasons = reasoner.predict(test_case, issue="relationship of interdependence")
+  if reasons.prediction == "p":
+    roi_predicted = True
+  else:
+    roi_predicted = False
+  if reasons.prediction == "a":
+    cannot_predict_roi = True
+  else:
+    cannot_predict_roi = False
+---
+code: |
+  if first_party.has_other_aip or second_party.has_other_aip:
+    aip_invalid_no_multiples = True
+  else:
+    aip_invalid_no_multiples = False
+---
+question: |
+  Do ${ first_party } and ${ second_party } ordinarily share property?
+subquestion: |
+  Between ${ cohabitation.start_date } and
+  % if cohabitation.has_terminated:
+  ${ cohabitation.end_date },
+  % else:
+  now,
+  % endif
+  have ${ first_party } and ${ second_party } bought, owned, and used property
+  together?
+  
+  The question is whether they have purchased things which were then owned and used
+  by both of them.
+  
+  If the only property that the parties have shared is their residence, but they do
+  not co-own the residence, then the answer to this question is "no.
+yesno: test_case.factor.shared_property
+---
+question: |
+  Do ${ first_party } and ${ second_party } intend for their relationship
+  to be permanent?
+yesno: test_case.factor.intention_of_permanence
+---
+question: |
+  Has ${ first_party } or ${ second_party } provided less than the level of support
+  that would ordinarily be expected of a common law spouse?
+yesno: test_case.factor.inadequate_support
+---
+question: |
+  Do ${ first_party } and ${ second_party } have separate social lives?
+subquestion: |
+  If ${ first_party } and ${ second_party } would usually socialize together, visit
+  family together, travel together, and celebrate holidays together, the answer to
+  this question is "no."
+yesno: test_case.factor.separate_social_lives
+---
+question: |
+  Do ${ first_party } and ${ second_party } express feelings of affection for one
+  another?
+subquestion: |
+  If ${ first_party } or ${ second_party } would ordinarily refer to one another with
+  terms of endearment like "honey", or "love", the answer to this question would be
+  "yes".
+  
+  If ${ first_party } or ${ second_party } would buy gifts for one another, or express
+  affection for one another in other ways, the answer to this question would be "yes".
+yesno: test_case.factor.expressions_of_affection
+---
+question: |
+  Do ${ first_party } and ${ second_party } share household duties?
+subquestion: |
+  If, for example, ${ first_party } would typically launder only their own clothes,
+  make their own meals, buy their own groceries, and ${ second_party } behaved in
+  the same way, the answer to this question would be "no".
+  
+  If ${ second_party } would usually do inside chores, and ${ first_party } would
+  usually do outside chores, the answer to this question would be "yes".
+yesno: test_case.factor.shared_household_duties
+---
+question: |
+  Have ${ first_party } and ${ second_party } ever made a court application in which
+  they claimed to be adult interdependent partners?
+subquestion: |
+  If you don't know the answer to this question, choose "no."
+  
+  For example, if ${ first_party } and ${ second_party } have ever been to court to
+  obtain a declaration of irreconcilability, the answer to this question would be
+  "yes".
+yesno: test_case.factor.acknowledgement
+---
+question: |
+  Have either of ${ first_party } or ${ second_party } spent a considerable amount of
+  time provide personal care to the other in a time of illness?
+subquestion: |
+  For example, if ${ first_party } has taken time off work to stay home and assist
+  ${ second_party } through a period of illness, the answer to this question would be
+  "yes".
+yesno: test_case.factor.caring_through_illness
+---
+question: |
+  Do ${ first_party } and ${ second_party } have a conjugal relationship?
+subquestion: |
+  If the parties have ordinarily been sexual partners, the answer to this question is
+  "yes".
+  
+  If the parties are not sexual partners, but they also do not have other sexual
+  relationship, and they share a bed, or spend most of their free time with one another
+  the answer to this question is "yes".
+yesno: test_case.factor.conjugal
+---
+question: |
+  Is the relationship bewteen ${ first_party } and ${ second_party } exclusive?
+subquestion: |
+  If ${ first_party } and ${ second_party } have sexual relationships with people
+  other than one another, the answer to this question is "no."
+  
+  If ${ first_party } and ${ second_party } are only two of three or more people who
+  are in a similar interdependent relationship with one another, the answer to this
+  question is "no".
+  
+  However, if ${ first_party } is the only person with whom ${ second_party } might be
+  considered in a relationship, and vice-versa, the answer to this question is "yes".
+yesno: test_case.factor.exclusive
+---
+question: |
+  Do ${ first_party } and ${ second_party } present themselves to the world as a
+  couple?
+subquestion: |
+  If ${ first_party } and ${ second_party } would use words like "husband", "wife",
+  "spouse", "partner", "common law partner", or "adult interdependent partner" to
+  describe one another to others, the answer to this question is "yes".
+  
+  If ${ first_party } and ${ second_party }, when completing documentation, describe
+  themselves as in a committed relationship, the answer to this question is "yes".
+yesno: test_case.factor.holding_out
+---
+question: |
+  Have ${ first_party } and ${ second_party } taken any steps to formalize their
+  relationship?
+subquestion: |
+  The question here is whether ${ first_party } and ${ second_party } have taken any
+  steps to formalize their relationship in a way which would make their relationship
+  similar to marriage or common law marriage.
+  
+  For example, if ${ first_party } and ${ second_party } are not married, but they
+  have held ceremonies during which they have committed to live with and support one
+  another, the answer to this question is "yes".
+  
+  Similarly, if ${ first_party} and ${ second_party } have signed an agreement that
+  they will live together indefinitely, the answer to this question is "yes".
+  
+  However, if ${ first_party } and ${ second_party } have signed a lease agreement in
+  which one is the tenant, and the other the landlord, that agreement would not make
+  their relationship similar to marriage.  If that was the only formalization between
+  them, the answer to this question would be "no".
+yesno: test_case.factor.formalization
+---
+question: |
+  Have ${ first_party } and ${ second_party } contributed to one another's or their
+  mutual well-being?
+subquestion: |
+  The question here is whether ${ first_party } and ${ second_party } have done things
+  to help one another, or to help both of them.
+  
+  Examples of contributions would be placing salary in a joint bank account, purchasing
+  groceries for the household, or contributing to the downpayment on properties.
+  
+  If ${ first_party } and ${ second_party } would usually use their own resources for
+  only their own benefit, the answer to this question is "no".
+yesno: test_case.factor.contributions_to_mutual_wellbeing
+---
+question: |
+  Are ${ first_party } and ${ second_party } financially inter-dependent, or is one
+  financially dependent on the other?
+subquestion: |
+  If ${ first_party } and ${ second_party } each have their own income or savings, and
+  each support themselves on that income, then the answer to this question is "no".
+  
+  If either ${ first_party } or ${ second_party } financially supports the other, the
+  answer to this question is "yes".
+  
+  If ${ first_party } and ${ second_party } cooperate financially to support both of
+  them, perhaps with different income-earners at different points in time, the answer
+  to this question is "yes".
+yesno: test_case.factor.financial_interdependence
+---
+question: |
+  Have ${ first_party } and ${ second_party } made arrangements for one to financially
+  support the other?
+subquestion: |
+  If ${ first_party } has made ${ second_party } the beneficiary of their will,
+  life insurance, pensions, or retirement savings, the answer to this question is "yes".
+yesno: test_case.factor.financial_support_arrangements
+---
+question: |
+  Do ${ first_party } and ${ second_party } care for and support children together?
+subquestion: |
+  The question here is not whether or not ${ first_party } and ${ second_party } are
+  the parents of children. If, for example, ${ first_party } has a child from a 
+  previous relationship who lives with ${ first_party } and ${ second_party }, and
+  both ${ first_party } and ${ second_party } care for and support that child,
+  the answer to this question is "yes".
+yesno: test_case.factor.children
+---
+question: |
+  Do ${ first_party } and ${ second_party } ordinarily live together?
+subquestion: |
+  Separations for work, school, seasonal employment, vacations, and other matters may
+  not change whether or not a couple were considered to 'ordinarily' live together.
+  
+  The question here is whether ${ first_party } and ${ second_party } have
+  considered their shared home their ordinary home. If they would typically keep their
+  property in one home, receive their mail at that one home, and reside together
+  whenever not prevented from doing so, the answer to this question would be "yes".
+yesno: test_case.factor.cohabitation
+---
+code: |
+  # This attempts to determine cohabitation based on the answers to specific questions.
+  # If it can't, the question below will be asked.
+  if cohabitation.started and \
+     not cohabitation.has_terminated and \
+     not period_of_separation.there_are_any:
+     test_case.factor.cohabitation = True
+---
+code: |
+  # This code turns the answers in the interview into a set of factors for use
+  # in the reasoner.
+  if test_case.factor.cohabitation == False:
+    test_case.factors.append("F1")
+  if test_case.factor.children:
+    test_case.factors.append("F9")
+  if test_case.factor.financial_support_arrangements:
+    test_case.factors.append("F8")
+  if test_case.factor.financial_interdependence:
+    test_case.factors.append("F7")
+  if test_case.factor.contributions_to_mutual_wellbeing:
+    test_case.factors.append("F6")
+  if test_case.factor.formalization:
+    test_case.factors.append("F5")
+  if test_case.factor.holding_out == False:
+    test_case.factors.append("F4")
+  if test_case.factor.exclusive == False:
+    test_case.factors.append("F3")
+  if test_case.factor.conjugal:
+    test_case.factors.append("F2")
+  if test_case.factor.caring_through_illness:
+    test_case.factors.append("F17")
+  if declaration_of_irreconcilability.there_are_any or test_case.factor.acknowledgement:
+    test_case.factors.append("F16")
+  if test_case.factor.shared_household_duties:
+    test_case.factors.append("F15")
+  if test_case.factor.expressions_of_affection:
+    test_case.factors.append("F14")
+  if test_case.factor.separate_social_lives:
+    test_case.factors.append("F13")
+  if test_case.factor.inadequate_support:
+    test_case.factors.append("F12")
+  if test_case.factor.intention_of_permanence:
+    test_case.factors.append("F11")
+  if test_case.factor.shared_property == False:
+    test_case.factors.append("F10")
+  test_case.finalized = True  
+---
+question: |
+  Have ${ first_party } and ${ second_party } ever signed a written agreement regarding
+  living separate and apart without possibility of reconciliation?
+yesno: written_agreement.there_are_any
+---
+question: When was the written agreement regarding separation signed?
+fields:
+  - Date Agreement Signed: written_agreement[i].date
+---
+question: |
+  Have ${ first_party } and ${ second_party } signed additional written agreements
+  regarding living separate and apart without possibility of reconciliation?
+subquestion: |
+  The written agreements you have mentioned already were signed on the following dates:
+  
+  % for wa in written_agreement:
+  * ${ wa.date}
+  % endfor
+yesno: written_agreement.there_is_another
+---
+question: |
+  Have ${ first_party } and ${ second_party } ever obtained a declaration of
+  irreconcilability from a court?
+yesno: declaration_of_irreconcilability.there_are_any
+---
+question: When was the declaration of irreconcilability obtained?
+fields:
+  - Date Agreement Signed: declaration_of_irreconcilability[i].date
+---
+question: |
+  Have ${ first_party } and ${ second_party } obtained additional declarations
+  of irreconcilability?
+subquestion: |
+  The declarations you have mentioned already were obtained on the following dates:
+  
+  % for doi in declaration_of_irreconcilability:
+  * ${ doi.date}
+  % endfor
+yesno: declaration_of_irreconcilability.there_is_another
+---
+  

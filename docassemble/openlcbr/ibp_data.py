@@ -3,6 +3,7 @@ from docassemble.base.util import *
 from DATree import *
 from lcbr_explain import *
 import yaml
+import copy
 
 def export_issues_from_tree(target, source):
   # The target is a dictionary.
@@ -94,6 +95,7 @@ class DAIBPData(DAObject):
     for c in cases:
       newcase = {}
       newcase['id'] = str(c.id)
+      newcase['name'] = str(c.name)
       newcase['year'] = str(c.year)
       newcase['winner'] = word_to_side(str(c.winner))
       newcase['citation'] = str(c.cite)
@@ -118,7 +120,7 @@ class DAIBPData(DAObject):
     #The second step is to spit it out in yaml.
     return yaml.dump(output,default_flow_style=False)
 
-  def predict(self, test_case, case_collection='default'):
+  def predict(self, test_case, case_collection='docassemble_openlcbr_output', model="docassemble_openlcbr_output", issue="trade_secret_misappropriation"):
     case ={}
     case['id'] = 'your-test-case'
     case['factors'] = set()
@@ -127,10 +129,10 @@ class DAIBPData(DAObject):
         case['factors'].add(f)
     p = DATree()
     p = ibp_explain.predict_case(case,
-                        'trade_secret_misappropriation',
+                        issue,
                         self.factors,
                         self.case_collections[case_collection],
-                        self.domain_models['ibp_original'])
+                        self.domain_models[model])
     return p
   
   def get_factor_id_by_proposition(self, prop):
@@ -150,11 +152,104 @@ class DAIBPData(DAObject):
     for f in case.factors:
       newcase['factors'].append(f)
     default_cases.append(newcase)
+
+  def get_predictive_strength(self, case_collection="docassemble_openlcbr_output", model="docassemble_openlcbr_output"):
+    # Get a leave-one-out test score for the reasoner.
+
+    correct_predictions = 0.0
+    total_predictions = 0.0
+    top_issue = ""
+
+    # Get the root issue
+    for i in self.domain_models[model]['issues']:
+      if self.domain_models[model]['issues'][i]['type'] == "top":
+        top_issue = self.domain_models[model]['issues'][i]['id']
+        break
+
+
+    # For Each Case in the Database
+    for c in self.case_collections[case_collection]['cases']:
+      
+      # Create a new reasoner
+      temp_reasoner = DAIBPData()
+       
+      # Give it the same Data
+      temp_reasoner.factors = self.factors
+      temp_reasoner.domain_models = self.domain_models
+      temp_reasoner.case_collections = copy.deepcopy(self.case_collections)
+
+      # Remove the case to be tested from the relevant case database
+      temp_reasoner.case_collections[case_collection]['cases'].remove(c)
+
+      # Make a DAIBPCase out of the current case data:
+      temp_test_case = DAIBPCase()
+      for f in c['factors']:
+        temp_test_case.factors.append(f)
+      temp_test_case.factors.gathered = True
+      
+      # Predict that Case against the remainder, Record the Result
+      #log("Predicting case " + c['id'] +", actual result " + c['winner'], "info")
+      result = temp_reasoner.predict(temp_test_case, case_collection, model, top_issue)
+      #log("Prediction is " + result.prediction, "info")
+      if result.prediction == c['winner']:
+        correct_predictions += 1
+      total_predictions += 1
+      #log("So far, " + str(correct_predictions) + " correct predictions out of " + str(total_predictions), "info")
+      
+    # Tell the user what percentage of cases were correctly predicted.
+    return (correct_predictions/total_predictions)*100.0
+
+  def get_all_predictions(self, case_collection="docassemble_openlcbr_output", model="docassemble_openlcbr_output"):
+    # Get a leave-one-out test score for the reasoner.
+
+    top_issue = ""
+    output = DATree()
+    output.text = "All Leave-One-Out Predictions"
+
+    # Get the root issue
+    for i in self.domain_models[model]['issues']:
+      if self.domain_models[model]['issues'][i]['type'] == "top":
+        top_issue = self.domain_models[model]['issues'][i]['id']
+        break
+
+
+    # For Each Case in the Database
+    for c in self.case_collections[case_collection]['cases']:
+      new_case_output = DATree()
+      new_case_output.text = str(c)
+
+      # Create a new reasoner
+      temp_reasoner = DAIBPData()
+       
+      # Give it the same Data
+      temp_reasoner.factors = self.factors
+      temp_reasoner.domain_models = self.domain_models
+      temp_reasoner.case_collections = copy.deepcopy(self.case_collections)
+
+      # Remove the case to be tested from the relevant case database
+      temp_reasoner.case_collections[case_collection]['cases'].remove(c)
+
+      # Make a DAIBPCase out of the current case data:
+      temp_test_case = DAIBPCase()
+      
+      for f in c['factors']:
+        temp_test_case.factors.append(f)
+      temp_test_case.factors.gathered = True
+      
+      # Predict that Case against the remainder, Record the Result
+      result = temp_reasoner.predict(temp_test_case, case_collection, model, top_issue)
+      
+      new_case_output.branches.append(result)
+      new_case_output.branches.gathered = True
+      
+      output.branches.append(new_case_output)
+    output.branches.gathered = True  
+    return output
   
 class DAIBPCase(DAObject):
   def init(self, *pargs, **kwargs):
     super(DAIBPCase, self).init(*pargs, **kwargs)
-    self.initializeAttribute('factors',DAList)
+    self.initializeAttribute('factors',DAList.using(object_type=DAObject))
     
 
 class DAIBPIssue(DATree):
@@ -179,6 +274,7 @@ def import_yaml_to_DA(database, factors, cases, model):
   # Load the Factors into the factors object
   for f in data['factors']:
     new_factor = DAObject()
+    #new_factor = factors.appendObject()
     new_factor.id = f
     new_factor.side = side_to_word(data['factors'][f]['favored_side'])
     new_factor.long_desc = data['factors'][f]['description']
@@ -190,14 +286,19 @@ def import_yaml_to_DA(database, factors, cases, model):
 
   # Load the Cases into the Cases Object
   for c in data['case_collections']['docassemble_openlcbr_output']['cases']:
-    new_case = DAIBPCase(c['id'])
+    new_case = DAIBPCase()
+    #new_case = cases.appendObject()
     new_case.id = c['id']
-    new_case.name = new_case.id # This seems to be necessary for review screens.
+    new_case.name = c['name']
     new_case.year = c['year']
     new_case.cite = c['citation']
     new_case.winner = side_to_word(c['winner'])
     for f in c['factors']:
-      new_case.factors.append(new_factors[f].copy_shallow('factors'))
+      #new_case.factors.append(new_factors[f].copy_shallow('factors'))
+      for factor in factors:
+        if factor.id == f:
+          new_case.factors.append(factor)
+          break
     new_case.factors.gathered = True
     #new_case.factors.auto_gather = False
     cases.append(new_case)
@@ -225,7 +326,11 @@ def import_yaml_to_DA(database, factors, cases, model):
         new_issue.join_type = "conjunctive"
     if 'factors' in issues[i]:
       for f in issues[i]['factors']:
-        new_issue.factors.append(new_factors[f].copy_shallow('factors'))
+        #new_issue.factors.append(new_factors[f].copy_shallow('factors'))
+        for factor in factors:
+          if factor.id == f:
+            new_issue.factors.append(factor)
+            break
     new_issue.factors.gathered = True
     #new_issue.factors.auto_gather = False
     new_issue.complete = True
@@ -239,7 +344,9 @@ def import_yaml_to_DA(database, factors, cases, model):
         new_issues[i].branches.append(new_issues[a])
   model.ko_factors = DAList('model.ko_factors')
   for kof in data['domain_models']['docassemble_openlcbr_output']['ko_factors']:
-    model.ko_factors.append(new_factors[kof].copy_shallow('factors'))
+    for factor in factors:
+      if factor.id == kof:
+        model.ko_factors.append(factor)
   model.ko_factors.gathered = True
   #model.ko_factors.auto_gather = False
   model.issues = top_issue
