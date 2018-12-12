@@ -16,39 +16,36 @@ Once you have a working reasoner, implement it in your docassemble interview by
 following these steps:
 
 1. Upload your reasoner file into the sources directory in docassemble.
-1. Include `.ibp_data` in the `modules` block of your interview.
-2. Include the following lines in the `objects` block of your interview, replacing
+2. Include `.ibp_data` in the `modules` block of your interview.
+3. Include the following lines in the `objects` block of your interview, replacing
    `reasoner_name.yml` with the name of the file you uploaded:
-+
 ```
 objects:
   - reasoner: DAIBPData
   - database: DAStaticFile.using(filename="data/sources/reasoner_name.yml")
   - test_case: DAIBPCase
 ```
-3. In your interview, populate the DAList `test_case.factors` with the factor IDs from your
+4. In your interview, populate the DAList `test_case.factors` with the factor IDs from your
    reasoner that are relevant to your test case.
-4. Call `reasoner.load(database)` to initialize the reasoner. If you do not want to
-   include the cases listed in your database, you can call `reasoner.load\_model\_only(database)`,
-   and then cases can be added to the reasoner using `reasoner.add\_precedent\_case(case)`
+5. Call `reasoner.load(database)` to initialize the reasoner. If you do not want to
+   include the cases listed in your database, you can call `reasoner.load_model_only(database)`,
+   and then cases can be added to the reasoner using `reasoner.add_precedent_case(case)`
    where `case` is a DAIBPCase object with attributes of `.id`, `.winner` (either 'p'
    or 'd'), and `.factors` as in a test case.
-5. Call `reasons = reasoner.predict(test_case, issue="id of root issue")`, replacing
+6. Call `reasons = reasoner.predict(test_case, issue="id of root issue")`, replacing
    "id of root issue" with the id you gave to the root issue in your database. It will
    return a DATree object which is the explanation of the result.
-6. Obtain the result of the prediction by looking at `reasons.prediction`. The value 'p'
+7. Obtain the result of the prediction by looking at `reasons.prediction`. The value 'p'
    indicates that the outcome was predicted for the plaintiff, 'd' for the defendant,
    and 'a' indicates that the reasoner abstained.
-7. To display the reasons to the user, you must include the following in the
+8. To display the reasons to the user, you must include the following in the
    `features` block of your interview:
-+
 ```
 features:
   javascript: docassemble.openlcbr:data/static/list_collapse.js
   css: docassemble.openlcbr:data/static/list_collapse.css
 ```
-+
-   Then, use `reasons.display_tree()` to display a collapsing tree interface of
+9. Then, use `reasons.display_tree()` to display a collapsing tree interface of
    the reasoner's results.
 
 ## Demos
