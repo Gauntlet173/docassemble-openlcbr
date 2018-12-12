@@ -1,7 +1,7 @@
 # docassemble-openlcbr
 A docassemble package for case outcome prediction using the analogical reasoning features of openlcbr.
 ## Requirements
-* docassemble
+* [docassemble](https://docassemble.org/)
 ## Installation Procedure
 Use the docassemble package manager to add the package from https://github.com/Gauntlet173/docassemble-openlcbr
 ## Usage
