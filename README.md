@@ -37,7 +37,10 @@ objects:
    return a DATree object which is the explanation of the result.
 7. Obtain the result of the prediction by looking at `reasons.prediction`. The value 'p'
    indicates that the outcome was predicted for the plaintiff, 'd' for the defendant,
-   and 'a' indicates that the reasoner abstained.
+   and 'a' indicates that the reasoner abstained. To display a user-friendly version
+   call `prediction_word(reasons.prediction)`, but be aware that what the reasoner
+   considers 'plaintiff' may represent 'true' in your interview, so `prediction_word`
+   is not always appropriate.
 8. To display the reasons to the user, you must include the following in the
    `features` block of your interview:
 ```
