@@ -106,7 +106,7 @@ To offer feedback, contact [Jason Morris](https://www.twitter.com/RoundTableLaw)
 * Matthias Grabmair for the Python implementation of IBP in [openlcbr]() on which
   docassemble-openlcbr is based. (And for re-implementing it in Python 2.7!)
 * The American Bar Association Center for Innovation, and in particular
-  Chase Hertel, Sarah Glassmeyer, and Joshua Furlong, who were particularly involved
+  Chase Hertel, Sarah Glassmeyer, and Jordan Furlong, who were particularly involved
   in selecting my proposal.
 * Jack Newton, Joshua Lenon, and Chris Thompson of Clio, who were instrumental in
   my fellowship receiving sponsorship funding from Clio.
