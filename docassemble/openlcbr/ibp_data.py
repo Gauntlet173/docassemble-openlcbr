@@ -265,7 +265,7 @@ class DAIBPIssue(DATree):
       output.extend(b.iterator())
     return output
 
-def import_yaml_to_DA(database, factors, cases, model):
+def import_yaml_to_DA(database, factors, cases, model, case_collection='docassemble_openlcbr_output', domain_model='docassemble_openlcbr_output'):
   # First, take the content of the yaml file and turn it into Python data.
   stream = open(database, 'r')
   data = yaml.load(stream)
@@ -285,11 +285,14 @@ def import_yaml_to_DA(database, factors, cases, model):
   #factors.auto_gather = False 
 
   # Load the Cases into the Cases Object
-  for c in data['case_collections']['docassemble_openlcbr_output']['cases']:
+  for c in data['case_collections'][case_collection]['cases']:
     new_case = DAIBPCase()
     #new_case = cases.appendObject()
     new_case.id = c['id']
-    new_case.name = c['name']
+    if 'name' in c:
+      new_case.name = c['name']
+    else:
+      new_case.name = c['citation']
     new_case.year = c['year']
     new_case.cite = c['citation']
     new_case.winner = side_to_word(c['winner'])
@@ -308,7 +311,7 @@ def import_yaml_to_DA(database, factors, cases, model):
   # Load the model into the model Object
   new_issues = {} # So that we can come back to it and use it to add branches.
   top_issue = None # To keep track of which issue is the root issue.
-  issues = data['domain_models']['docassemble_openlcbr_output']['issues']
+  issues = data['domain_models'][domain_model]['issues']
   for i in issues:
     new_issue = DAIBPIssue()
     new_issue.factors = DAList()
@@ -316,9 +319,10 @@ def import_yaml_to_DA(database, factors, cases, model):
     new_issue.id = issues[i]['id']
     new_issue.text = issues[i]['proposition']
     new_issue.type = issues[i]['type']
-    if new_issue.type == "top":
+    if new_issue.type == "top" or new_issue.type == "top_level_issue":
       top_issue = new_issue
-    new_issue.default = issues[i]['winner_if_unraised']
+    if 'winner_if_unraised' in issues[i]:
+      new_issue.default = issues[i]['winner_if_unraised']
     if 'antecedents' in issues[i]:
       if 'disjoint_antecedents' in issues[i]:
         new_issue.join_type = "disjunctive"
@@ -343,7 +347,7 @@ def import_yaml_to_DA(database, factors, cases, model):
       for a in issues[i]['antecedents']:
         new_issues[i].branches.append(new_issues[a])
   model.ko_factors = DAList('model.ko_factors')
-  for kof in data['domain_models']['docassemble_openlcbr_output']['ko_factors']:
+  for kof in data['domain_models'][domain_model]['ko_factors']:
     for factor in factors:
       if factor.id == kof:
         model.ko_factors.append(factor)

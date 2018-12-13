@@ -536,7 +536,7 @@ subquestion: |
 yesno: test_case.factor.conjugal
 ---
 question: |
-  Is the relationship bewteen ${ first_party } and ${ second_party } exclusive?
+  Is the relationship between ${ first_party } and ${ second_party } exclusive?
 subquestion: |
   If ${ first_party } and ${ second_party } have sexual relationships with people
   other than one another, the answer to this question is "no."
