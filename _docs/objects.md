@@ -1,3 +1,8 @@
+---
+layout: docs
+title: docassemble-oepnlcbr Objects
+short_title: Objects
+---
 # docassembl-openlcbr Objects
 
 ## DAIBPData
