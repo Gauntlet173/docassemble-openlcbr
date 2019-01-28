@@ -23,3 +23,4 @@ exclude:
   - .git
   - subdocs
   - CHANGELOG.yml
+  - TODO.md
