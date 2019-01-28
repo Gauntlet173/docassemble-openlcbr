@@ -1,6 +1,6 @@
 ---
 layout: docs
 title: docassemble-openlcbr Overview
-short-title: Overview
+short_title: Overview
 ---
 # Overview
