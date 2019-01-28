@@ -1,4 +1,18 @@
-- title: Documentation Pages
+- title: Tutorial
   docs:
+    - tutorial_overview
+    - tutorial_installation
+    - tutorial_building_reasoner
+    - tutorial_implementing_reasoner
+- title: Legal Case-Based Reasoning
+  docs:
+    - ibp_basics
     - building_reasoners
+    - db_builder
+    - db_tester
+- title: Reference
+  docs:
+    - demos
     - objects
+    - installation
+    - change_log
