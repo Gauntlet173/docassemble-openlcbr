@@ -1,3 +1,8 @@
+---
+layout: docs
+title: Building Analogical Reasoners using docassemble-openlcbr
+short_title: Building Analogical Reasoners
+---
 # Building Analogical Reasoners using docassemble-openlcbr
 
 ## Introduction
