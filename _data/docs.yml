@@ -1,6 +1,4 @@
----
----
-- title: Docs Pages
+- title: Documentation Pages
   docs:
     - building_reasoners
     - objects
