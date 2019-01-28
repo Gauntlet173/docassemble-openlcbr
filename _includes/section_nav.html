@@ -1,6 +1,6 @@
 {%- assign docs = site.data.docs | map: 'docs' | join: ',' | split: ',' %}
 {%- for document in docs %}
-  {%- assign document_url = document | prepend:"/docs/" | append:".html" %}
+  {%- assign document_url = document | prepend:"/docassemble-openlcbr/docs/" | append:".html" %}
   {%- if document_url == page.url %}
       <div class="row">
         <div class="col-xs-9 mx-auto">
