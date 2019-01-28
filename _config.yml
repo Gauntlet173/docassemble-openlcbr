@@ -3,8 +3,8 @@ title: "docassemble-openlcbr"
 email: "jason@roundtablelaw.ca"
 description: >-
   A package to extend open-source expert system tool docassemble to be able to use analogical case based reasoning from openlcbr.
-baseurl: "https://gauntlet173.github.io/docassemble-openlcbr"
-url: "https://gauntlet173.github.io/docassemble-openlcbr"
+baseurl: ""
+#url: "https://gauntlet173.github.io/docassemble-openlcbr"
 repository: Gauntlet173/docassemble-openlcbr
 github_username: Gauntlet173
 collections:
