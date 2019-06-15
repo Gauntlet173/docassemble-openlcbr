@@ -30,8 +30,11 @@ def get_aip_dates(cohabitation, parties_have_child_by_birth_or_adoption, child_o
 
     # Add events for each of the periods of separation
     for pos in period_of_separation:
-        events.append({'date': pos.start_date, 'type': 'cohab_end', 'termination': pos.intent})
-        events.append({'date': pos.end_date, 'type': 'cohab_start', 'reconciliation': pos.reconciliation})
+        events.append({'date': pos.start_date, 'type': 'cohab_end', 'termination': pos.intended_to_terminate})
+        if not pos.intended_to_terminate:
+          events.append({'date': pos.end_date, 'type': 'cohab_start', 'reconciliation': False})
+        else:
+          events.append({'date': pos.end_date, 'type': 'cohab_start', 'reconciliation': pos.ended_with_reconciliation_attempt})
 
     # Add events for all the declarations of irreconcilability
     for doi in declaration_of_irreconcilability:

@@ -117,3 +117,4 @@ To offer feedback, contact [Jason Morris](https://www.twitter.com/RoundTableLaw)
   
 ## Version History
 0.5.0 - First "feature complete" version.
+0.5.3 - Fixed - Periods of Separation Not Working
