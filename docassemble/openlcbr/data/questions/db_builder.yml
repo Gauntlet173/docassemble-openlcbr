@@ -80,7 +80,7 @@ code: |
   
   database.initialize(filename="da-openlcbr.yml")
   yaml_output = data.output_yaml(factors, cases, model)
-  database.write(yaml_output)
+  database.write(unicode(yaml_output, "utf-8"))
   
   reasoner.load(database)
   if testing.ready():
@@ -467,7 +467,7 @@ subquestion: |
   Join Type | ${ issue_review_screen_target.join_type } | ${ action_button_html(url_ask(issue_review_screen_target.instanceName + ".join_type")) }
   % endif
   
-  % if issue_review_screen_target.type == "leaf":
+  % if False: #issue_review_screen_target.type == "leaf":
   ${ action_button_html(url_action("delete_leaf_node",node=issue_review_screen_target.instanceName),icon="trash",label="Delete This Node",color='danger') }
   % endif
   

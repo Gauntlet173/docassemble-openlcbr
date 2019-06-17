@@ -273,21 +273,21 @@ def import_yaml_to_DA(database, factors, cases, model, case_collection='docassem
   new_factors = {}
   # Load the Factors into the factors object
   for f in data['factors']:
-    new_factor = DAObject()
-    #new_factor = factors.appendObject()
+    #new_factor = DAObject()
+    new_factor = factors.appendObject()
     new_factor.id = f
     new_factor.side = side_to_word(data['factors'][f]['favored_side'])
     new_factor.long_desc = data['factors'][f]['description']
     new_factor.name = data['factors'][f]['proposition']
-    factors.append(new_factor.copy_shallow('factors'))
+    #factors.append(new_factor.copy_shallow('factors'))
     new_factors[f] = new_factor
   factors.gathered = True
   #factors.auto_gather = False 
 
   # Load the Cases into the Cases Object
   for c in data['case_collections'][case_collection]['cases']:
-    new_case = DAIBPCase()
-    #new_case = cases.appendObject()
+    #new_case = DAIBPCase()
+    new_case = cases.appendObject(DAIBPCase)
     new_case.id = c['id']
     if 'name' in c:
       new_case.name = c['name']
@@ -300,11 +300,12 @@ def import_yaml_to_DA(database, factors, cases, model, case_collection='docassem
       #new_case.factors.append(new_factors[f].copy_shallow('factors'))
       for factor in factors:
         if factor.id == f:
+          # See notes below about adding factors to issues. Bug.
           new_case.factors.append(factor)
           break
     new_case.factors.gathered = True
     #new_case.factors.auto_gather = False
-    cases.append(new_case)
+    #cases.append(new_case)
   cases.gathered = True
   #cases.auto_gather = False
 
@@ -314,8 +315,8 @@ def import_yaml_to_DA(database, factors, cases, model, case_collection='docassem
   issues = data['domain_models'][domain_model]['issues']
   for i in issues:
     new_issue = DAIBPIssue()
-    new_issue.factors = DAList()
-    new_issue.branches = DAList()
+    new_issue.initializeAttribute('factors', DAList)
+    new_issue.initializeAttribute('branches', DAList)
     new_issue.id = issues[i]['id']
     new_issue.text = issues[i]['proposition']
     new_issue.type = issues[i]['type']
@@ -328,13 +329,8 @@ def import_yaml_to_DA(database, factors, cases, model, case_collection='docassem
         new_issue.join_type = "disjunctive"
       else:
         new_issue.join_type = "conjunctive"
-    if 'factors' in issues[i]:
-      for f in issues[i]['factors']:
-        #new_issue.factors.append(new_factors[f].copy_shallow('factors'))
-        for factor in factors:
-          if factor.id == f:
-            new_issue.factors.append(factor)
-            break
+    
+    
     new_issue.factors.gathered = True
     #new_issue.factors.auto_gather = False
     new_issue.complete = True
@@ -342,10 +338,21 @@ def import_yaml_to_DA(database, factors, cases, model, case_collection='docassem
     new_issue.branches.object_type = DAIBPIssue
     #new_issue.branches.auto_gather = False
     new_issues[i] = new_issue
+  
+  # Do the recursive naming prior to adding factors and antecedents.
+  top_issue._set_instance_name_recursively('model.issues')
+  
   for i in issues:
+    if 'factors' in issues[i]:
+      for f in issues[i]['factors']:
+        for factor in factors:
+          if factor.id == f:
+            new_issues[i].factors.append(factor)
+            break
     if 'antecedents' in issues[i]:
       for a in issues[i]['antecedents']:
         new_issues[i].branches.append(new_issues[a])
+        
   model.ko_factors = DAList('model.ko_factors')
   for kof in data['domain_models'][domain_model]['ko_factors']:
     for factor in factors:
@@ -355,5 +362,5 @@ def import_yaml_to_DA(database, factors, cases, model, case_collection='docassem
   #model.ko_factors.auto_gather = False
   model.issues = top_issue
   model.issues.build = True
-  model.issues._set_instance_name_recursively('model.issues')
+  #model.issues._set_instance_name_recursively('model.issues')
     
